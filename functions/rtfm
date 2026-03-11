@@ -1,0 +1,68 @@
+# ~/arch-projects/RTFM/functions/rtfm
+
+# 1. Grab the immediate last command from history
+local last_full_cmd=$(fc -ln -1)
+local cmd_base=$(echo "$last_full_cmd" | awk '{print $1}')
+
+# 2. Check for Database Lock
+if [[ -f /var/lib/pacman/db.lck ]]; then
+    if [[ $(echo -e "No\nYes (Remove Lock)" | fzf --height 15% --header "Pacman is locked. Remove /var/lib/pacman/db.lck?") == "Yes (Remove Lock)" ]]; then
+        sudo rm /var/lib/pacman/db.lck && echo "Lock removed."
+        return 0
+    fi
+fi
+
+# 3. PRIORITY: Command Not Found Check
+# If the command itself isn't a valid binary/alias/function
+if ! command -v "$cmd_base" >/dev/null 2>&1; then
+    echo "'$cmd_base' not found. Searching for owner..."
+    
+    # Check if the file database exists
+    if [[ -z $(ls /var/lib/pacman/sync/*.files 2>/dev/null) ]]; then
+        echo "File database is missing."
+        if [[ $(echo -e "No\nYes (Update Now)" | fzf --height 15% --header "Run 'sudo pacman -Fy'?") == "Yes (Update Now)" ]]; then
+            sudo pacman -Fy
+        else
+            return 1
+        fi
+    fi
+
+    # Search for the binary in common bin paths
+    local owner=$(pacman -Fq "/usr/bin/$cmd_base" | head -n 1)
+    if [[ -n "$owner" ]]; then
+        local pkg=$owner
+    else
+        echo "No official package provides /usr/bin/$cmd_base. Checking AUR..."
+        local pkg=$cmd_base
+    fi
+else
+    # 4. SECONDARY: Pacman/AUR History Check
+    # If the command exists but the pacman operation failed (like the vscode example)
+    local last_pac_cmd=$(history | grep -E 'pacman|yay|paru' | tail -n 1 | sed 's/^[ ]*[0-9]*[ ]*//')
+    local pkg=$(echo "$last_pac_cmd" | awk '{print $NF}')
+    
+    if [[ -z "$pkg" ]]; then
+        echo "No recent failures detected. The manual is safe for now."
+        return 1
+    fi
+fi
+
+# 5. Search and selection logic (Official + AUR)
+# We use sed to remove repository prefixes (like 'extra/') from the pkg name
+local clean_pkg=$(echo "$pkg" | sed 's|.*/||')
+
+local selection=$( (pacman -Ssq "^${clean_pkg}$" || pacman -Ssq "$clean_pkg"; yay -Ssq "$clean_pkg" 2>/dev/null) | awk '!x[$0]++' | fzf \
+    --height 40% \
+    --layout=reverse \
+    --border \
+    --header "RTFM: Fix for '$clean_pkg'" \
+    --preview "pacman -Si {1} 2>/dev/null || yay -Si {1} 2>/dev/null || echo 'No info available'")
+    
+if [[ -n "$selection" ]]; then
+    local manager="yay"
+    pacman -Sp "$selection" >/dev/null 2>&1 && manager="sudo pacman"
+    local new_cmd="$manager -S $selection"
+    print -z "$new_cmd"
+else
+    echo "Nothing selected."
+fi

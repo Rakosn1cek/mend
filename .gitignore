@@ -1,0 +1,5 @@
+# ~/.arch-projects/RTFM/.gitignore
+*.swp
+*.swo
+.DS_Store
+*~
