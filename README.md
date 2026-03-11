@@ -1,6 +1,6 @@
 # RTFM (Real-Time Fix Manager)
 
-Version: 0.1.0
+Version: v0.1.1
 
 A modular, lazy-loaded Zsh plugin for Arch Linux. Instead of searching the Wiki for why a command failed, `rtfm` uses `fzf` to resolve package conflicts, find missing binaries, and clear database locks.
 
@@ -28,7 +28,15 @@ Choose a location for your plugins (e.g., `~/arch-projects/` or `~/.config/zsh/p
 ```zsh
 mkdir -p ~/arch-projects
 git clone [https://github.com/Rakosn1cek/RTFM.git](https://github.com/Rakosn1cek/RTFM.git) ~/arch-projects/RTFM
+echo "source ~/arch-projects/rtfm/rtfm.plugin.zsh" >> ~/.zshrc
 ```
+## Installation instruction for OMZ users:
+```zsh
+git clone https://github.com/Rakosn1cek/RTFM.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/rtfm
+```
+# Add 'rtfm' to the plugins array in your ~/.zshrc
+# plugins=(... rtfm)
+
 ## Configure Zsh
 Add the following line to your ~/.zshrc:
 ```zsh

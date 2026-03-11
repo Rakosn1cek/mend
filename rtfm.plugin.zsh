@@ -1,13 +1,17 @@
 # ~/arch-projects/RTFM/rtfm.plugin.zsh
-# Version: 0.1.0
+# Version: v0.1.1
 # Author: Lukas Grumlik (Rakosn1cek)
 # Description: The fzf-powered Pacman Fixer
 
-# Add the functions directory to the Zsh function path
-fpath+=("$HOME/arch-projects/RTFM/functions")
+# Find the directory where this script is located
+# ${0:A:h} gets the Absolute path, then the Head (directory)
+export RTFM_DIR="${0:A:h}"
 
-# 'autoload -Uz' tells Zsh to load the file from fpath only when called
+# Add the functions subdirectory to the fpath
+fpath+=("$RTFM_DIR/functions")
+
+# Autoload the main function
 autoload -Uz rtfm
 
-# Optional: Add a snarky alias
+# Provide a shorter alias
 alias fix="rtfm"
