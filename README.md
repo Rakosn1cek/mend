@@ -26,9 +26,7 @@ Ensure you have the following installed on your Arch system:
 Choose a location for your plugins (e.g., `~/arch-projects/` or `~/.config/zsh/plugins/`):
 
 ```zsh
-mkdir -p ~/arch-projects
-git clone [https://github.com/Rakosn1cek/RTFM.git](https://github.com/Rakosn1cek/RTFM.git) ~/arch-projects/RTFM
-echo "source ~/arch-projects/rtfm/rtfm.plugin.zsh" >> ~/.zshrc
+git clone [https://github.com/Rakosn1cek/RTFM.git](https://github.com/Rakosn1cek/RTFM.git) /path/to/your/choice/rtfm
 ```
 ## Installation instruction for OMZ users:
 ```zsh
@@ -40,7 +38,7 @@ git clone https://github.com/Rakosn1cek/RTFM.git ${ZSH_CUSTOM:-~/.oh-my-zsh/cust
 ## Configure Zsh
 Add the following line to your ~/.zshrc:
 ```zsh
-source ~/arch-projects/RTFM/rtfm.plugin.zsh
+source /path/to/your/choice/rtfm/rtfm.plugin.zsh
 ```
 ## Initialize File Database
 For the "Command Not Found" feature to work, ensure your local file database is up to date:
