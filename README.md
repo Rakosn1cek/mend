@@ -2,7 +2,7 @@
 
 Version: v0.1.1
 
-A modular, lazy-loaded Zsh plugin for Arch Linux. Instead of searching the Wiki for why a command failed, `rtfm` uses `fzf` to resolve package conflicts, find missing binaries, and clear database locks.
+A modular, lazy-loaded Zsh plugin for Arch Linux. Built for users who know the Wiki by heart but want to automate the repetitive recovery steps. RTFM handles the "manual" work of resolving locks, missing binaries, and typos so you can stay in the flow.
 
 ![RTFM Demo](assets/demo.png)
 
@@ -22,20 +22,21 @@ Ensure you have the following installed on your Arch system:
 
 ## Installation
 
-### 1. Clone the repository
-Choose a location for your plugins (e.g., `~/arch-projects/` or `~/.config/zsh/plugins/`):
+## Clone the repository
+Clone RTFM to your preferred directory:
 
 ```zsh
-git clone [https://github.com/Rakosn1cek/RTFM.git](https://github.com/Rakosn1cek/RTFM.git) /path/to/your/choice/rtfm
+git clone https://github.com/Rakosn1cek/RTFM.git /path/to/your/choice/rtfm
 ```
 ## Installation instruction for OMZ users:
 ```zsh
 git clone https://github.com/Rakosn1cek/RTFM.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/rtfm
 ```
-# Add 'rtfm' to the plugins array in your ~/.zshrc
-# plugins=(... rtfm)
+## Add 'rtfm' to the plugins array in your ~/.zshrc
+**plugins=(... rtfm)**
 
 ## Configure Zsh
+Manual / Vanilla Zsh.
 Add the following line to your ~/.zshrc:
 ```zsh
 source /path/to/your/choice/rtfm/rtfm.plugin.zsh
@@ -45,6 +46,8 @@ For the "Command Not Found" feature to work, ensure your local file database is 
 ```zsh
 sudo pacman -Fy
 ```
+> **Note:** It is recommended to run this periodically (or via a timer) to keep the "Command-to-Package" mapping accurate.
+
 ## Usage
 Simply run rtfm after a failed command or a "command not found" error.
 *Example*
@@ -78,7 +81,7 @@ If **RTFM** saved you some time today, feel free to buy me a coffee!
 **v0.3.0 - Intelligence & History**
 [ ] **Smart History Search**: If a command fails, check the user's history for the most similar successful command and suggest it.
 
-[ ] **Mirrorlist Health**: Detect "connection timed out" errors and offer to trigger a reflector update to refresh mirrors.
+[ ] **Mirrorlist Health**: Detect "connection timed out" errors and offer to trigger a `reflector` update to refresh mirrors.
 
 **Long-term Research**
 [ ] **Fish & Bash Ports**: Exploring a POSIX-compliant core to bring RTFM logic to other shells.
