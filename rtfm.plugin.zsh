@@ -1,7 +1,11 @@
-# ~/arch-projects/RTFM/rtfm.plugin.zsh
-# Version: v0.1.1
-# Author: Lukas Grumlik (Rakosn1cek)
-# Description: The fzf-powered Pacman Fixer
+# ------------------------------------------------------------------------------
+# RTFM (Real-Time Fix Manager)
+# Version:     v0.2.0
+# Author:      Lukas Grumlik (Rakosn1cek)
+# Description: Modular, fzf-powered recovery tool for Arch Linux.
+# Repository:  https://github.com/Rakosn1cek/RTFM
+# License:     MIT
+# ------------------------------------------------------------------------------
 
 # Find the directory where this script is located
 # ${0:A:h} gets the Absolute path, then the Head (directory)

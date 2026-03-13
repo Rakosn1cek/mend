@@ -1,7 +1,9 @@
 # ~/arch-projects/RTFM/functions/rtfm
 
-# 1. Grab the immediate last command from history
-local last_full_cmd=$(fc -ln -1)
+# 1. Grab the last command (skipping rtfm itself)
+local last_full_cmd=$(history -n -1 | grep -v "rtfm")
+[[ -z "$last_full_cmd" ]] && last_full_cmd=$(history -n -2 | head -n 1)
+
 local cmd_base=$(echo "$last_full_cmd" | awk '{print $1}')
 
 # 2. Check for Database Lock
@@ -11,6 +13,26 @@ if [[ -f /var/lib/pacman/db.lck ]]; then
         return 0
     fi
 fi
+
+# --- START OF v0.2.0 PGP KEY AUTO-FETCH ---
+local pgp_key=$(history -n -20 | grep -iE "unknown public key|could not be verified" | grep -oE '[A-F0-9]{16,40}' | tail -1)
+
+if [[ -n "$pgp_key" ]]; then
+    print -P "%F{yellow}RTFM:%f Detected missing PGP key: %F{cyan}$pgp_key%f"
+    if read -q "choice?Import this key from keyserver? (y/n) "; then
+        print -P "\n\n%F{yellow}RTFM:%f Fetching key from keyserver.ubuntu.com..."
+        
+        if gpg --keyserver keyserver.ubuntu.com --recv-keys "$pgp_key"; then
+            print -P "\n%F{green}RTFM:%f Key imported successfully."
+            [[ -n "$last_full_cmd" ]] && print -z "$last_full_cmd"
+        else
+            print -P "\n%F{red}RTFM Error:%f Failed to fetch key. Check your internet or keyserver status."
+        fi
+        return 0
+    fi
+    echo ""
+fi
+# --- END OF v0.2.0 PGP KEY AUTO-FETCH ---
 
 # 3. PRIORITY: Command Not Found Check
 # If the command itself isn't a valid binary/alias/function
