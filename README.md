@@ -1,12 +1,21 @@
 # Mend (formerly RTFM)
 
-**VERSION: v0.2.1**
+**VERSION: v0.3.0**
 
 **Mend** is a modular, fzf-powered recovery tool for Arch Linux. It "mends" your broken command chain by detecting failures (like missing PGP keys or locked databases) and offering a context-aware fix.
 > [!IMPORTANT]
 > **RTFM has been rebranded to Mend.** If you are an existing user, please see the [Migration](#-migration-from-rtfm) section below.
 
 ![RTFM Demo](assets/demo.png)
+
+## What's New in v0.3.0
+
+The **"Janitor & Detective"** update. This version moves Mend from a reactive tool to a proactive system assistant.
+
+* **The Janitor:** Automatically detects orphaned dependencies (`-Qdtq`) and offers a one-click cleanup (`pacman -Rns`).
+* **Dynamic History Depth:** Mend now "digs deeper." If an error isn't found in the immediate history, it recursively expands its search depth (up to 100 lines) to find the root cause.
+* **Mirrorlist Health:** Detected a `404` or `Connection Timeout`? Mend now offers to trigger `reflector` to find the 10 fastest HTTPS mirrors for you.
+* **Intelligent Execution:** Improved logic ensures Mend only opens search windows if the last command actually failed. No more ghost `fzf` windows.
 
 ## What's New in v0.2.0
 [!TIP]
@@ -15,13 +24,20 @@
 * **Zero-Conflict History**: Switched to `history -n` to prevent `mend` from accidentally opening your text editor (Micro/Vim) when reading command history.
 * **Improved Logic Flow**: `mend` now intelligently skips over echo and itself to find the actual failed command that needs fixing.
 
+---
+
 ## Features
 
-* **[NEW v0.2.0] PGP Key Automation:** Detects "Unknown Public Key" errors during AUR installs and offers to fetch them from a keyserver automatically.
-* **Intelligent Package Correction:** If `pacman` fails to find a package, `mend` searches both official repositories and the AUR to find the correct match.
-* **Command-to-Package Mapping:** Uses `pacman -Fy` logic to identify which package provides a missing binary (e.g., typing `tree` when it's not installed).
-* **Automatic Lock Detection:** Detects `/var/lib/pacman/db.lck` and offers an interactive prompt to remove it.
-* **Zero-Overhead Loading:** Uses Zsh's `autoload` functionality. The logic only hits your RAM when you actually run the command.
+* **[NEW v0.3.0] The Janitor (Orphan Sweep)**: Proactive detection of unused dependencies (`-Qdtq`) with a one-click cleanup option to keep your system lean.
+* **[NEW v0.3.0] Smart Mirror Refresh**: Integrated `reflector` support to automatically fix `404` or `Connection Timeout` errors in your package manager.
+* **[NEW v0.3.0] Recursive History Scanning**: High-performance iterative scanning that "digs deeper" into your history to find errors, even if you've run "noise" commands like `ls` or `cd`in between.
+* **PGP Key Automation**: Detects "Unknown Public Key" errors during AUR installs and fetches them from `keyserver.ubuntu.com` automatically.
+* **Intelligent Package Correction**: If a package install fails, `mend` searches both official repositories and the AUR to find the correct match.
+* **Command-to-Package Mapping**: Uses `pacman -Fy` logic to identify which package provides a missing binary (e.g., offering to install `tree` when the command is not found).
+* **Automatic Lock Detection**: Identifies `/var/lib/pacman/db.lck` and offers an interactive prompt to remove it safely.
+* **Zero-Overhead Loading**: Built for Zsh using `autoload` functionality. The logic only hits your RAM when you actually call the command.
+
+---
 
 ## Prerequisites
 
@@ -30,6 +46,8 @@ Ensure you have the following installed on your Arch system:
 * **Zsh** (The shell this is built for)
 * **yay or paru** (for AUR support)
 * **pacman** (standard on Arch)
+
+---
 
 ## Installation
 
@@ -59,6 +77,8 @@ sudo pacman -Fy
 ```
 > **Note:** It is recommended to run this periodically (or via a timer) to keep the "Command-to-Package" mapping accurate.
 
+___
+
 ## Usage
 Simply run `mend` after a failed command or a "command not found" error.
 **Example 1**: Missing Binary
@@ -81,8 +101,21 @@ Import this key from keyserver? (y/n) y
 # mend fetches the key and puts the 'yay' command back in your buffer
 ```
 
+**[New in v0.3.0] Connection/Mirror Fix:**
+If a download fails due to a dead mirror, Mend identifies the timeout and prompts:
+`Mend: Detected connection/mirror issues. Update mirrorlist with Reflector? (y/n)`
+
+**[New in v0.3.0] System Cleanup (The Janitor):**
+If your system is healthy but has unused dependencies:
+`Mend: Your system has orphaned dependencies. Remove orphaned packages? (pacman -Rns)`
+
+**[New in v0.3.0] Deep History Search:**
+Mend now scans past "noise" commands. If you run `ls` or `clear` five times after a PGP error, Mend will still find and offer to fix the original error.
+
+___
+
 ## License
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT © 2026 Rakosn1cek. Original logic and patterns for Arch-specific error interception. Attribution is required for any redistribution or derivative works.
 
 [⭐ Star mend on GitHub](https://github.com/Rakosn1cek/mend)
 
@@ -111,6 +144,18 @@ If **mend** saved you some time today, feel free to buy me a coffee!
 - [ ] **Fish & Bash Ports**: Exploring a POSIX-compliant core to bring mend logic to other shells.
 
 ## 📜 CHANGELOG
+
+### v0.3.0 (2026-03-18) - The Janitor & Detective
+* **Feature:** Added "The Janitor" – Automatic detection of orphaned dependencies (`-Qdtq`) with an interactive `pacman -Rns` prompt.
+* **Feature:** Added "Reflector" integration – Detects `404` and `Connection Timeout` errors in history and offers to refresh the top 10 HTTPS mirrors.
+* **Logic:** Implemented **Recursive History Scanning**. Mend now iteratively doubles its search depth (up to 100 lines) to find buried PGP or Mirror errors.
+* **UX:** Added an exit-code check. Mend now skips the package search `fzf` window if the last command was successful (e.g., `ls` or `echo`).
+* **Security:** Added a project header with versioning and ownership/license metadata.
+
+### v0.2.1 (2026-03-16) - Rebrand & PGP
+* **Rebrand:** Renamed project from `rtfm` to `mend`.
+* **Feature:** Added PGP Public Key auto-fetch for AUR builds.
+* **Compatibility:** Added official Oh My Zsh plugin support.
 
 ### [v0.2.0] - 2026-03-13
 #### Added

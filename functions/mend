@@ -1,10 +1,17 @@
-# ~/arch-projects/mend/functions/mend
+# ------------------------------------------------------------------------------
+# MEND - The Arch Linux Command Assistant
+# Version: 0.3.0
+# Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
+# License: MIT
+# ------------------------------------------------------------------------------
+# This code is the original work of Lukas Grumlik - (Rakosn1cek). Attribution is required.
+# ------------------------------------------------------------------------------
 
 function mend() {
-    # 1. Grab the last command (skipping mend itself)
+    local MEND_VERSION="0.3.0"
+    # 1. Grab the last command
     local last_full_cmd=$(history -n -1 | grep -v "mend")
     [[ -z "$last_full_cmd" ]] && last_full_cmd=$(history -n -2 | head -n 1)
-
     local cmd_base=$(echo "$last_full_cmd" | awk '{print $1}')
 
     # 2. Check for Database Lock
@@ -15,33 +22,52 @@ function mend() {
         fi
     fi
 
-    # --- START OF v0.2.0 PGP KEY AUTO-FETCH ---
-    local pgp_key=$(history -n -20 | grep -iE "unknown public key|could not be verified" | grep -oE '[A-F0-9]{16,40}' | tail -1)
+    # 3. Dynamic History Scanner (PGP & Mirrors)
+    local depth=15
+    local max_depth=100
+    local pgp_key=""
+    local mirror_fail=false
 
+    while [[ $depth -le $max_depth ]]; do
+        local log=$(history -n -$depth)
+        pgp_key=$(echo "$log" | grep -iE "unknown public key|could not be verified" | grep -oE '[A-F0-9]{16,40}' | tail -1)
+        if echo "$log" | grep -qiE "Connection timed out|Could not resolve host|404 Not Found"; then
+            mirror_fail=true
+        fi
+        [[ -n "$pgp_key" || "$mirror_fail" == true ]] && break
+        (( depth *= 2 ))
+    done
+
+    # Handle PGP Fix
     if [[ -n "$pgp_key" ]]; then
         print -P "%F{yellow}Mend:%f Detected missing PGP key: %F{cyan}$pgp_key%f"
         if read -q "choice?Import this key from keyserver? (y/n) "; then
-            print -P "\n\n%F{yellow}Mend:%f Fetching key from keyserver.ubuntu.com..."
-            
+            print -P "\n\n%F{yellow}Mend:%f Fetching from keyserver.ubuntu.com..."
             if gpg --keyserver keyserver.ubuntu.com --recv-keys "$pgp_key"; then
-                print -P "\n%F{green}Mend:%f Key imported successfully."
+                print -P "\n%F{green}Mend:%f Key imported. Re-running command..."
                 [[ -n "$last_full_cmd" ]] && print -z "$last_full_cmd"
-            else
-                print -P "\n%F{red}Mend Error:%f Failed to fetch key. Check your internet or keyserver status."
+                return 0
             fi
+        fi
+        echo ""
+    fi
+
+    # Handle Mirrorlist Fix
+    if [[ "$mirror_fail" == true ]]; then
+        print -P "%F{red}Mend:%f Detected connection/mirror issues in history."
+        if read -q "choice?Update mirrorlist with Reflector? (y/n) "; then
+            print -P "\n\n%F{yellow}Mend:%f Running Reflector..."
+            sudo reflector --latest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+            print -P "%F{green}Mend:%f Mirrors updated."
             return 0
         fi
         echo ""
     fi
-    # --- END OF v0.2.0 PGP KEY AUTO-FETCH ---
 
-    # 3. PRIORITY: Command Not Found Check
+    # 4. Command Not Found Check
     if ! command -v "$cmd_base" >/dev/null 2>&1; then
         echo "'$cmd_base' not found. Searching for owner..."
-        
-        # Check if the file database exists
         if [[ -z $(ls /var/lib/pacman/sync/*.files 2>/dev/null) ]]; then
-            echo "File database is missing."
             if [[ $(echo -e "No\nYes (Update Now)" | fzf --height 15% --header "Run 'sudo pacman -Fy'?") == "Yes (Update Now)" ]]; then
                 sudo pacman -Fy
             else
@@ -49,41 +75,47 @@ function mend() {
             fi
         fi
 
-        # Search for the binary in common bin paths
         local owner=$(pacman -Fq "/usr/bin/$cmd_base" | head -n 1)
-        if [[ -n "$owner" ]]; then
-            local pkg=$owner
-        else
-            echo "No official package provides /usr/bin/$cmd_base. Checking AUR..."
-            local pkg=$cmd_base
-        fi
+        local pkg=${owner:-$cmd_base}
     else
-        # 4. SECONDARY: Pacman/AUR History Check
-        local last_pac_cmd=$(history | grep -E 'pacman|yay|paru' | tail -n 1 | sed 's/^[ ]*[0-9]*[ ]*//')
-        local pkg=$(echo "$last_pac_cmd" | awk '{print $NF}')
-        
-        if [[ -z "$pkg" ]]; then
-            echo "No recent failures detected. Everything seems mended."
-            return 1
+        # 5. History Package Search (Only if not a common built-in)
+        if [[ ! "$cmd_base" =~ ^(echo|ls|cd|pwd|cat|history|mend)$ ]]; then
+            local last_pac_cmd=$(history | grep -E 'pacman|yay|paru' | tail -n 1 | sed 's/^[ ]*[0-9]*[ ]*//')
+            local pkg=$(echo "$last_pac_cmd" | awk '{print $NF}')
         fi
     fi
 
-    # 5. Search and selection logic (Official + AUR)
-    local clean_pkg=$(echo "$pkg" | sed 's|.*/||')
+    # 6. FZF Selection Logic
+    # NEW: Only search if the last command actually FAILED or was 'not found'
+    if [[ -n "$pkg" ]]; then
+        # Fetch the exit code of the last command from Zsh history
+        # We only want to run fzf if the last real command returned an error (!= 0)
+        local last_exit_code=$(fc -ln -1 | awk '{print $NF}' > /dev/null; echo $?) 
 
-    local selection=$( (pacman -Ssq "^${clean_pkg}$" || pacman -Ssq "$clean_pkg"; yay -Ssq "$clean_pkg" 2>/dev/null) | awk '!x[$0]++' | fzf \
-        --height 40% \
-        --layout=reverse \
-        --border \
-        --header "Mend: Fix for '$clean_pkg'" \
-        --preview "pacman -Si {1} 2>/dev/null || yay -Si {1} 2>/dev/null || echo 'No info available'")
-        
-    if [[ -n "$selection" ]]; then
-        local manager="yay"
-        pacman -Sp "$selection" >/dev/null 2>&1 && manager="sudo pacman"
-        local new_cmd="$manager -S $selection"
-        print -z "$new_cmd"
-    else
-        echo "Nothing selected."
+        if ! command -v "$cmd_base" >/dev/null 2>&1 || [[ $last_exit_code -ne 0 ]]; then
+            local clean_pkg=$(echo "$pkg" | sed 's|.*/||')
+            local selection=$( (pacman -Ssq "^${clean_pkg}$" || pacman -Ssq "$clean_pkg"; yay -Ssq "$clean_pkg" 2>/dev/null) | awk '!x[$0]++' | fzf \
+                --height 40% --layout=reverse --border --header "Mend: Fix for '$clean_pkg'" \
+                --preview "pacman -Si {1} 2>/dev/null || yay -Si {1} 2>/dev/null || echo 'No info available'")
+                
+            if [[ -n "$selection" ]]; then
+                local manager="yay"
+                pacman -Sp "$selection" >/dev/null 2>&1 && manager="sudo pacman"
+                print -z "$manager -S $selection"
+                return 0
+            fi
+        fi
+    fi
+
+    # 7. THE JANITOR (Orphan Cleanup)
+    local orphans=$(pacman -Qdtq)
+    if [[ -n "$orphans" ]]; then
+        print -P "\n%F{blue}Mend:%f Your system has orphaned dependencies."
+        if [[ $(echo -e "No\nYes (Cleanup)" | fzf --height 15% --header "Remove orphaned packages? (pacman -Rns)") == "Yes (Cleanup)" ]]; then
+            sudo pacman -Rns $orphans
+            return 0
+        fi
+    elif [[ "$mirror_fail" == false && -z "$pgp_key" && -z "$pkg" ]]; then
+        echo "No recent failures detected. Everything seems mended."
     fi
 }
