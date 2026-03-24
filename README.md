@@ -8,45 +8,6 @@
 
 ![RTFM Demo](assets/demo.png)
 
-## What's New in v0.4.0
-
-## [0.4.0] - 2026-03-22
-### Added
-- Integrated Knowledge Base (MEND_KB) for standardized error descriptions and Wiki links.
-- Deep-linking support for Arch Wiki troubleshooting sections.
-- Unified FZF header styling with keyboard shortcut hints.
-- Terminal buffer normalization using `clear` to prevent redraw bugs on full screens.
-
-### Fixed
-- Resolved "Double Print/Ghosting" bug when returning from the browser.
-- Fixed variable leakage where the wrong Wiki page would open in sequential errors.
-- Corrected FZF height and layout for better readability on small terminal windows.
-
-### Changed
-- Moved Knowledge Base initialization inside the function for better scope management.
-- Switched to native Zsh string expansion for faster metadata parsing.
-
----
-
-## What's New in v0.3.0
-
-The **"Janitor & Detective"** update. This version moves Mend from a reactive tool to a proactive system assistant.
-
-* **The Janitor:** Automatically detects orphaned dependencies (`-Qdtq`) and offers a one-click cleanup (`pacman -Rns`).
-* **Dynamic History Depth:** Mend now "digs deeper." If an error isn't found in the immediate history, it recursively expands its search depth (up to 100 lines) to find the root cause.
-* **Mirrorlist Health:** Detected a `404` or `Connection Timeout`? Mend now offers to trigger `reflector` to find the 10 fastest HTTPS mirrors for you.
-* **Intelligent Execution:** Improved logic ensures Mend only opens search windows if the last command actually failed. No more ghost `fzf` windows.
-
----
-
-## What's New in v0.2.0
-
-* **The Signature Update**: This version focuses on making AUR installations frictionless by handling GPG automation and refining shell history interaction.
-* **PGP Key Auto-Fetch**: No more manual `gpg --recv-keys`. `mend` detects the missing ID and fetches it for you.
-* **Zero-Conflict History**: Switched to `history -n` to prevent `mend` from accidentally opening your text editor (Micro/Vim) when reading command history.
-* **Improved Logic Flow**: `mend` now intelligently skips over echo and itself to find the actual failed command that needs fixing.
-
----
 
 ## Features
 * **[NEW v0.4.0] Integrated Arch Wiki**: Press `[w]` inside any fix menu to open web browser directly to the relevant troubleshooting section on the Arch Wiki.
