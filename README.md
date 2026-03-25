@@ -142,8 +142,10 @@ If **mend** saved you some time today, feel free to buy me a coffee!
 
 ### Long-term Research
 - [x] **Contextual Wiki Links**: Provide a direct URL to the relevant Arch Wiki section alongside the fix. [Added in v0.4.0]
+
 **In progress**
 - [ ] **Smart History Search**: Suggest the most similar successful command from history when a typo occurs.
+
 **Future Research**
 - [ ] **Fish & Bash Ports**: Exploring a POSIX-compliant core to bring mend logic to other shells.
 
