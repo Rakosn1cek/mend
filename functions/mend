@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # MEND - The Arch Linux Command Assistant
-# Version: 0.4.0
+# Version: 0.5.0
 # Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
 # License: MIT
 # ------------------------------------------------------------------------------
@@ -19,9 +19,10 @@ function mend() {
         "ERR_CONFLICT" "File path collision between packages. Manual path verification recommended.|https://wiki.archlinux.org/title/Pacman#\"Failed_to_commit_transaction_(conflicting_files)\"_error"
         "ERR_CORRUPT" "Invalid package metadata/tarball. Likely a failed download or mirror sync.|https://wiki.archlinux.org/title/Pacman#\"Package_is_invalid_or_corrupted\"_error"
         "ERR_MIRRORS" "Stale or slow mirrors detected. Refreshing mirrorlist via reflector.|https://wiki.archlinux.org/title/Mirrors#Mirror_ranking"
+        "ERR_LIB" "Missing shared library. Re-installing the provider package restores the .so file.|https://wiki.archlinux.org/title/System_maintenance#Check_for_broken_packages"
     )
         
-    local MEND_VERSION="0.4.0"
+    local MEND_VERSION="0.5.0"
     
     # 1. Grab history context
     local last_full_cmd=$(history -n -1 | grep -v "mend")
@@ -44,19 +45,28 @@ function mend() {
         fi
     fi
 
-    # 3. Dynamic History Scanner (PGP & Mirrors)
+    # 3. Dynamic History Scanner (PGP, Mirrors & Libraries)
     local depth=15
     local max_depth=100
     local pgp_key=""
     local mirror_fail=false
+    local lib_missing=""
 
     while [[ $depth -le $max_depth ]]; do
         local log=$(history -n -$depth)
+        
+        # PGP Key detection
         pgp_key=$(echo "$log" | grep -iE "unknown public key|could not be verified" | grep -oE '[A-F0-9]{16,40}' | tail -1)
+        
+        # Mirror failure detection
         if echo "$log" | grep -qiE "Connection timed out|Could not resolve host|404 Not Found"; then
             mirror_fail=true
         fi
-        [[ -n "$pgp_key" || "$mirror_fail" == true ]] && break
+
+        # Library dependency detection
+        lib_missing=$(echo "$log" | grep -oP "error while loading shared libraries: \K[^:]+" | tail -1)
+
+        [[ -n "$pgp_key" || "$mirror_fail" == true || -n "$lib_missing" ]] && break
         (( depth *= 2 ))
     done
 
@@ -100,6 +110,62 @@ function mend() {
             sudo reflector --latest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
             print -P "%F{green}Mend:%f Mirrors updated."
             return 0
+        fi
+        echo ""
+    fi
+
+    # Handle Missing Shared Library Fix (v0.5.0)
+    if [[ -n "$lib_missing" ]]; then
+        # 1. Physical Verification: Is it actually gone?
+        if [[ -f "/usr/lib/$lib_missing" || -f "/lib/$lib_missing" ]]; then
+            print -P "%F{green}Mend:%f Library %F{cyan}$lib_missing%f is present. Check for corruption or path errors."
+            return 0
+        fi
+
+        # Pull metadata from Knowledge Base
+        local kb_entry="${MEND_KB[ERR_LIB]}"
+        local lib_desc="${kb_entry%|*}"
+        local lib_wiki="${kb_entry#*|}"
+
+        print -P "%F{red}Mend:%f Confirmed missing library: %F{cyan}$lib_missing%f"
+
+        # 2. Files DB Age Check (7 days)
+        local old_db=(/var/lib/pacman/sync/*.files(Nm+7))
+        if [[ -z $(ls /var/lib/pacman/sync/*.files 2>/dev/null) || -n "$old_db" ]]; then
+            print -P "%F{yellow}Mend:%f Files database is missing or old. Search might be inaccurate."
+        fi
+
+        # 3. Search logic: Try exact match, fallback to base name if versioned (.so.X) fails
+        local search_term="$lib_missing"
+        local raw_matches=($(pacman -Fq "$search_term" 2>/dev/null))
+        
+        if [[ ${#raw_matches[@]} -eq 0 ]]; then
+            search_term="${lib_missing%.so*}.so"
+            raw_matches=($(pacman -Fq "$search_term" 2>/dev/null))
+        fi
+
+        # 4. Extract clean package names
+        local providers=()
+        for match in $raw_matches; do
+            local pkg="${${(s:/:)match}[2]}"
+            [[ -n "$pkg" ]] && providers+=("$pkg")
+        done
+        providers=(${(u)providers})
+
+        # 5. UI Result with KB integration
+        if [[ ${#providers[@]} -gt 0 ]]; then
+            local lib_choice=$(printf "%s\n" "${providers[@]}" | fzf --height 40% --layout=reverse --border \
+                --header "Mend: $lib_desc"$'\n'"Shortcut: [w] Open Arch Wiki" \
+                --preview "pacman -Si {1}" \
+                --bind "w:execute-silent( (xdg-open '$lib_wiki' >/dev/null 2>&1) &! )")
+
+            if [[ -n "$lib_choice" ]]; then
+                print -P "\n%F{yellow}Mend:%f Preparing to re-install %F{cyan}$lib_choice%f to restore shared libraries..."
+                print -z "sudo pacman -S $lib_choice"
+                return 0
+            fi
+        else
+            print -P "%F{yellow}Mend:%f No official package found for %F{cyan}$lib_missing%f."
         fi
         echo ""
     fi

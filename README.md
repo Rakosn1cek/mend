@@ -1,15 +1,16 @@
-# Mend (formerly RTFM)
+# Mend
 
-**VERSION: v0.4.0**
+**VERSION: v0.5.0**
 
 **Mend** is a modular, fzf-powered recovery tool for Arch Linux. It "mends" your broken command chain by detecting failures (like missing PGP keys or locked databases) and offering a context-aware fix.
-> [!IMPORTANT]
-> **RTFM has been rebranded to Mend.** If you are an existing user, please see the [Migration](#-migration-from-rtfm) section below.
 
 ![RTFM Demo](assets/demo.png)
 
 
 ## Features
+* **[NEW v0.5.0] Shared Library Repair**: Automatically identifies error while loading shared libraries from your shell history.
+* **Intelligent Version Fallback**: If an exact library version (e.g., .so.13) is no longer in the repos, Mend automatically searches for the base provider (e.g., .so) to bridge the gap between your apps and the latest Arch rolling-release updates.
+* **Physical File Verification**: Performs a sanity check in `/usr/lib/` to confirm a library is truly missing before suggesting a re-install, preventing unnecessary package operations
 * **[NEW v0.4.0] Integrated Arch Wiki**: Press `[w]` inside any fix menu to open web browser directly to the relevant troubleshooting section on the Arch Wiki.
 * **[NEW v0.3.0] The Janitor (Orphan Sweep)**: Proactive detection of unused dependencies (`-Qdtq`) with a one-click cleanup option to keep your system lean.
 * **[NEW v0.3.0] Smart Mirror Refresh**: Integrated `reflector` support to automatically fix `404` or `Connection Timeout` errors in your package manager.
@@ -29,6 +30,7 @@ Ensure you have the following installed on your Arch system:
 * **Zsh** (The shell this is built for)
 * **yay or paru** (for AUR support)
 * **pacman** (standard on Arch)
+* **pacman-contrib** (Optional: for paccache cleanup)
 
 ---
 
@@ -54,17 +56,17 @@ Add the following line to your ~/.zshrc:
 source /path/to/your/choice/mend/mend.plugin.zsh
 ```
 ## Initialize File Database
-For the "Command Not Found" feature to work, ensure your local file database is up to date:
+For Command Not Found and Shared Library Repair to function, your local file database must be synced:
 ```zsh
 sudo pacman -Fy
 ```
-> **Note:** It is recommended to run this periodically (or via a timer) to keep the "Command-to-Package" mapping accurate.
+> **Note**: Mend v0.5.0 will now nudge you to run this if your database is missing or older than 7 days.
 
 ___
 
 ## Usage
 Simply run `mend` after a failed command or a "command not found" error.
-**Example 1**: Missing Binary
+**Example 1: Missing Binary**
 ```zsh
 ❯ tree
 zsh: command not found: tree
@@ -72,7 +74,7 @@ zsh: command not found: tree
 ❯ mend
 # fzf opens, searches for 'tree', and prepares the install command
 ```
-**Example 2**: PGP Signature Error (AUR) [NEW v0.2.0]
+**Example 2: PGP Signature Error (AUR) [NEW v0.2.0]**
 ```zsh
 ❯ yay -S some-aur-package
 ==> ERROR: One or more PGP signatures could not be verified!
@@ -92,29 +94,18 @@ if you're sure a package manager is not already running, you can remove /var/lib
 ❯ mend
 # Mend detects the ghost lock, offers a fix, and provides the Wiki shortcut
 Mend: Ghost lock file (/var/lib/pacman/db.lck) detected. Usually from a crash.
-[w] Wiki: [https://wiki.archlinux.org/title/Pacman#](https://wiki.archlinux.org/title/Pacman#)"Failed_to_init_transaction_(unable_to_lock_database)"_error
+[w] Wiki: [System maintenance](https://wiki.archlinux.org/title/Pacman#%22Failed_to_init_transaction_(unable_to_lock_database)%22_error)
 ```
+**Example 4: Missing Library [New v0.5.0]**
+```zsh
+❯ teamspeak3
+teamspeak3: error while loading shared libraries: libssl.so.1.1: cannot open shared object file
+
+❯ mend
+# Mend detects the version mismatch, finds the provider, and offers a fix
+```
+
 ---
-
-**[New in v0.4.0] Integrated Troubleshooting & Arch Wiki:**
-Mend now includes a built-in Knowledge Base for critical Arch Linux errors (Database Locks, PGP verification, File Conflicts).
-* **Interactive Fixes**: Choose "Yes" to automate the repair (e.g., removing `db.lck`).
-* **Arch Wiki Integration**: Press `[w]` at any prompt to jump directly to the official documentation for that specific error.
-* **TUI Stability**: Optimized terminal buffer management using `clear` to prevent redraw artifacts on full screens.
-
----
-
-**[New in v0.3.0] Connection/Mirror Fix, System Cleanup and Deep History Search**
-* **Connection/Mirror Fix:**
-If a download fails due to a dead mirror, Mend identifies the timeout and prompts:
-`Mend: Detected connection/mirror issues. Update mirrorlist with Reflector? (y/n)`
-* **System Cleanup (The Janitor):**
-If your system is healthy but has unused dependencies:
-`Mend: Your system has orphaned dependencies. Remove orphaned packages? (pacman -Rns)`
-* **Deep History Search:**
-Mend now scans past "noise" commands. If you run `ls` or `clear` five times after a PGP error, Mend will still find and offer to fix the original error.
-
-___
 
 ## License
 MIT © 2026 Rakosn1cek. Original logic and patterns for Arch-specific error interception. Attribution is required for any redistribution or derivative works.
@@ -128,8 +119,7 @@ If **mend** saved you some time today, feel free to buy me a coffee!
 
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/Rakosn1cek)
 
-## 🗺️ Roadmap
-
+## Roadmap
 ### v0.2.0 - The "Signature" Update (Current)
 - [x] **PGP Key Auto-Fetch**: Detect GPG verification failures during AUR installs and fetch missing keys automatically.
 - [x] **History Resilience**: Migration to `history -n` to prevent `$EDITOR` conflicts.
@@ -151,64 +141,12 @@ If **mend** saved you some time today, feel free to buy me a coffee!
 
 ## 📜 CHANGELOG
 
-## v0.4.0 (2026-03-22) - Knowledge Base and Arch Wiki Links
-### Added
-- Integrated Knowledge Base (MEND_KB) for standardized error descriptions and Wiki links.
-- Deep-linking support for Arch Wiki troubleshooting sections.
-- Unified FZF header styling with keyboard shortcut hints.
-- Terminal buffer normalization using `clear` to prevent redraw bugs on full screens.
-
-### Fixed
-- Resolved "Double Print/Ghosting" bug when returning from the browser.
-- Fixed variable leakage where the wrong Wiki page would open in sequential errors.
-- Corrected FZF height and layout for better readability on small terminal windows.
-### Changed
-- Moved Knowledge Base initialization inside the function for better scope management.
-- Switched to native Zsh string expansion for faster metadata parsing.
-
-
-### v0.3.0 (2026-03-18) - The Janitor & Detective
-* **Feature:** Added "The Janitor" – Automatic detection of orphaned dependencies (`-Qdtq`) with an interactive `pacman -Rns` prompt.
-* **Feature:** Added "Reflector" integration – Detects `404` and `Connection Timeout` errors in history and offers to refresh the top 10 HTTPS mirrors.
-* **Logic:** Implemented **Recursive History Scanning**. Mend now iteratively doubles its search depth (up to 100 lines) to find buried PGP or Mirror errors.
-* **UX:** Added an exit-code check. Mend now skips the package search `fzf` window if the last command was successful (e.g., `ls` or `echo`).
-* **Security:** Added a project header with versioning and ownership/license metadata.
-
-### v0.2.1 (2026-03-16) - Rebrand & PGP
-- **Rebrand:** Renamed project from `rtfm` to `mend`.
-- **Feature:** Added PGP Public Key auto-fetch for AUR builds.
-- **Compatibility:** Added official Oh My Zsh plugin support.
-
-### [v0.2.0] - 2026-03-13
-#### Added
-- Automated GPG/PGP key fetching from `keyserver.ubuntu.com`.
-- Visual feedback with colored status messages (Success/Error/Warning).
-- Buffer re-injection for recovered AUR commands.
-
-#### Changed
-- Replaced `fc` with `history -n` to bypass `$EDITOR` conflicts.
-- Refined history scraping to ignore `mend` and `echo` calls.
-- Updated README with better usage examples and modular descriptions.
-
-### [v0.1.0] - 2026-03-01
-- Initial release.
-- Support for `db.lck` detection and removal.
-- Command-not-found integration using `pacman -F`.
-- Basic `fzf` search for official and AUR packages.
+For a detailed history of all versions and technical changes, please see the [CHANGELOG.md](https://github.com/Rakosn1cek/mend/CHANGELOG.md).
 
 ## ⚠️ Known Issues
 * **Zsh History Settings:** If your `HISTSIZE` is set extremely low or if you use `setopt HIST_IGNORE_ALL_DUPS`, mend might struggle to find the original failed command. 
 * **Keyserver Downtime:** mend relies on `keyserver.ubuntu.com`. If that server is down or blocked by your network/firewall, PGP auto-fetch will fail (mend will notify you if this happens).
 * **Subshell Execution:** Because mend relies on `history -n`, it may not detect errors generated inside nested subshells or some complex pipe chains.
 * **Non-Standard Helpers:** Currently optimized for `yay`, `paru`, and `makepkg`. Other AUR helpers might have slightly different error strings that aren't caught yet.
-
-## Migration from RTFM
-**If you previously used RTFM**:
-
-- Rename your local folder from `rtfm` to `mend`.
-
-- Update your .zshrc (change `autoload -Uz rtfm` to `autoload -Uz mend`).
-
-- The rtfm command is now an alias for mend to ensure your existing muscle memory still works.
 
 > *Find a bug? Open an issue or submit a PR. I'm especially looking for PGP error strings from helpers other than yay/paru*

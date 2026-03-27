@@ -1,5 +1,24 @@
 ## 📜 CHANGELOG
 
+## [v0.5.0] - 2026-03-27
+### Added
+- Shared Library Repair: New detection engine for error while loading shared libraries.
+- Intelligent Version Fallback: Implemented automatic base-name searching (e.g., libalpm.so.13 → libalpm.so) to resolve rolling-release version increments.
+- Physical File Verification: Added a pre-search check for files in /usr/lib/ and /lib/ to confirm a library is truly missing before suggesting repairs.
+- Database Age Nudge: Integrated a check for `pacman -Fy` database metadata. Mend now warns if the sync database is missing or older than 7 days.
+- Arch Wiki Shortcut: Added [w] keybinding to the library provider menu, linking directly to System Maintenance documentation.
+
+### Fixed
+- Search Noise: Filtered out "private" bundled libraries (e.g., /opt/teamspeak3/) by prioritising system-wide library paths in the provider search.
+- String Parsing: Replaced brittle awk/sed pipes with native Zsh parameter expansion for safer package name extraction.
+- FZF Preview: Corrected the preview command to ensure `pacman -Si` always receives a clean package name string.
+
+### Changed
+-Internal Logic: Optimised the library search to use a single while loop with internal Zsh splitting, reducing subshell overhead.
+- README: Migrated full version history to CHANGELOG.md and streamlined the main documentation for better readability.
+
+---
+
 ## [0.4.0] - 2026-03-22
 ### Added
 - Integrated Knowledge Base (MEND_KB) for standardized error descriptions and Wiki links.
