@@ -141,7 +141,7 @@ If **mend** saved you some time today, feel free to buy me a coffee!
 
 ## 📜 CHANGELOG
 
-For a detailed history of all versions and technical changes, please see the [CHANGELOG.md](https://github.com/Rakosn1cek/mend/CHANGELOG.md).
+For a detailed history of all versions and technical changes, please see the [CHANGELOG.md](https://github.com/Rakosn1cek/mend/blob/main/CHANGELOG.md).
 
 ## ⚠️ Known Issues
 * **Zsh History Settings:** If your `HISTSIZE` is set extremely low or if you use `setopt HIST_IGNORE_ALL_DUPS`, mend might struggle to find the original failed command. 
