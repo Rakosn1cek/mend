@@ -24,14 +24,14 @@
 - Integrated Knowledge Base (MEND_KB) for standardized error descriptions and Wiki links.
 - Deep-linking support for Arch Wiki troubleshooting sections.
 - Unified FZF header styling with keyboard shortcut hints.
-- Terminal buffer normalization using `clear` to prevent redraw bugs on full screens.
+- Terminal buffer normalisation using `clear` to prevent redraw bugs on full screens.
 
 ### Fixed
 - Resolved "Double Print/Ghosting" bug when returning from the browser.
 - Fixed variable leakage where the wrong Wiki page would open in sequential errors.
 - Corrected FZF height and layout for better readability on small terminal windows.
 ### Changed
-- Moved Knowledge Base initialization inside the function for better scope management.
+- Moved Knowledge Base initialisation inside the function for better scope management.
 - Switched to native Zsh string expansion for faster metadata parsing.
 
 ---

@@ -8,18 +8,18 @@
 
 
 ## Features
-* **[NEW v0.5.0] Shared Library Repair**: Automatically identifies error while loading shared libraries from your shell history.
+* **[NEW v0.5.0] Shared Library Repair**: Identifies an error while loading shared libraries from your shell history.
 * **Intelligent Version Fallback**: If an exact library version (e.g., .so.13) is no longer in the repos, Mend automatically searches for the base provider (e.g., .so) to bridge the gap between your apps and the latest Arch rolling-release updates.
-* **Physical File Verification**: Performs a sanity check in `/usr/lib/` to confirm a library is truly missing before suggesting a re-install, preventing unnecessary package operations
+* **Physical File Verification**: Performs a systematic check in `/usr/lib/` to confirm a library is truly missing before suggesting a reinstall, preventing unnecessary package operations.
 * **[NEW v0.4.0] Integrated Arch Wiki**: Press `[w]` inside any fix menu to open web browser directly to the relevant troubleshooting section on the Arch Wiki.
 * **[NEW v0.3.0] The Janitor (Orphan Sweep)**: Proactive detection of unused dependencies (`-Qdtq`) with a one-click cleanup option to keep your system lean.
 * **[NEW v0.3.0] Smart Mirror Refresh**: Integrated `reflector` support to automatically fix `404` or `Connection Timeout` errors in your package manager.
-* **[NEW v0.3.0] Recursive History Scanning**: High-performance iterative scanning that "digs deeper" into your history to find errors, even if you've run "noise" commands like `ls` or `cd`in between.
+* **[NEW v0.3.0] Recursive History Scanning**: High-performance iterative scanning that "digs deeper" into your history to find errors, even if you've run "noise" commands like `ls` or `cd` in between.
 * **PGP Key Automation**: Detects "Unknown Public Key" errors during AUR installs and fetches them from `keyserver.ubuntu.com` automatically.
 * **Intelligent Package Correction**: If a package install fails, `mend` searches both official repositories and the AUR to find the correct match.
 * **Command-to-Package Mapping**: Uses `pacman -Fy` logic to identify which package provides a missing binary (e.g., offering to install `tree` when the command is not found).
 * **Automatic Lock Detection**: Identifies `/var/lib/pacman/db.lck` and offers an interactive prompt to remove it safely.
-* **Zero-Overhead Loading**: Built for Zsh using `autoload` functionality. The logic only hits your RAM when you actually call the command.
+* **Resource-efficient Loading**: Built for Zsh using `autoload` functionality. The logic only hits your RAM when you actually call the command.
 
 ---
 
@@ -37,7 +37,7 @@ Ensure you have the following installed on your Arch system:
 ## Installation
 
 ## Clone the repository
-Clone mend to your preferred directory:
+**Clone mend to your preferred directory:**
 
 ```zsh
 git clone https://github.com/Rakosn1cek/mend.git /path/to/your/choice/mend
@@ -50,17 +50,17 @@ git clone https://github.com/Rakosn1cek/mend.git ${ZSH_CUSTOM:-~/.oh-my-zsh/cust
 **plugins=(... mend)**
 
 ## Configure Zsh
-Manual / Vanilla Zsh.
-Add the following line to your ~/.zshrc:
+**Manual / Vanilla Zsh.**
+**Add the following line to your ~/.zshrc:**
 ```zsh
 source /path/to/your/choice/mend/mend.plugin.zsh
 ```
 ## Initialize File Database
-For Command Not Found and Shared Library Repair to function, your local file database must be synced:
+**For Command Not Found and Shared Library Repair to function, your local file database must be synced:**
 ```zsh
 sudo pacman -Fy
 ```
-> **Note**: Mend v0.5.0 will now nudge you to run this if your database is missing or older than 7 days.
+> **Note**: Mend v0.5.0 will now prompt you to run this if your database is missing or older than 7 days.
 
 ___
 
@@ -93,7 +93,7 @@ if you're sure a package manager is not already running, you can remove /var/lib
 
 ❯ mend
 # Mend detects the ghost lock, offers a fix, and provides the Wiki shortcut
-Mend: Ghost lock file (/var/lib/pacman/db.lck) detected. Usually from a crash.
+Mend: Ghost lock file detected. This typically occurs after a crash.
 [w] Wiki: [System maintenance](https://wiki.archlinux.org/title/Pacman#%22Failed_to_init_transaction_(unable_to_lock_database)%22_error)
 ```
 **Example 4: Missing Library [New v0.5.0]**
@@ -147,6 +147,6 @@ For a detailed history of all versions and technical changes, please see the [CH
 * **Zsh History Settings:** If your `HISTSIZE` is set extremely low or if you use `setopt HIST_IGNORE_ALL_DUPS`, mend might struggle to find the original failed command. 
 * **Keyserver Downtime:** mend relies on `keyserver.ubuntu.com`. If that server is down or blocked by your network/firewall, PGP auto-fetch will fail (mend will notify you if this happens).
 * **Subshell Execution:** Because mend relies on `history -n`, it may not detect errors generated inside nested subshells or some complex pipe chains.
-* **Non-Standard Helpers:** Currently optimized for `yay`, `paru`, and `makepkg`. Other AUR helpers might have slightly different error strings that aren't caught yet.
+* **Non-Standard Helpers:** Currently optimised for `yay`, `paru`, and `makepkg`. Other AUR helpers might have slightly different error strings that aren't caught yet.
 
 > *Find a bug? Open an issue or submit a PR. I'm especially looking for PGP error strings from helpers other than yay/paru*
