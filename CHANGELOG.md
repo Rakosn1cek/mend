@@ -1,5 +1,22 @@
 ## 📜 CHANGELOG
 
+## [v0.6.0] - 2026-04-06
+### Added
+- Distro-Agnostic Core: Full rewrite to support Arch (pacman), openSUSE (zypper), Fedora (dnf), and Ubuntu/Mint (apt).
+- Dynamic Driver Setup: Automatic package manager detection and path mapping for locks, queries, and installs.
+- Unified Knowledge Base: Migrated error descriptions and Wiki links into a modular MEND_KB associative array for all supported distributions.
+- Agnostic Library Search: New provider extraction logic that handles different table formats across apt-file, zypper, and dnf repoquery.
+- The Janitor (Multi-Distro): Added orphan cleanup support for apt autoremove, dnf autoremove, and zypper packages --unneeded.
+
+### Fixed
+- Table Parsing: Implemented robust header-skipping and column-index logic to handle padded output from Zypper and DNF.
+- Clean Selection: Added xargs and Zsh parameter stripping to ensure package names are passed to the installer without accidental spaces or colons.
+
+### Changed
+- Documentation: Simplified the README to focus on readable instructions and universal requirements.
+
+---
+
 ## [v0.5.0] - 2026-03-27
 ### Added
 - Shared Library Repair: New detection engine for error while loading shared libraries.

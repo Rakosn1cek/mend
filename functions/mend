@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
-# MEND - The Arch Linux Command Assistant
-# Version: 0.5.0
+# MEND - The Distro-Agnostic Linux Command Assistant
+# Version: 0.6.0
 # Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
 # License: MIT
 # ------------------------------------------------------------------------------
@@ -10,19 +10,137 @@
 function mend() {
     clear
     
-    # 0. Initialize Knowledge Base
+    local MEND_VERSION="0.6.0"
+    
+    # --- Distro Detection & Driver Setup ---
+    local MEND_PM="unknown"
+    local PM_LOCK="" PM_QUERY="" PM_INSTALL="" PM_ORPHANS="" PM_WIKI=""
+    local PM_SEARCH="" PM_INFO="" PM_DB_PATH="" PM_HELPER=""
     typeset -A MEND_KB
-    MEND_KB=(
-        "ERR_LOCKED"  "Ghost lock file (/var/lib/pacman/db.lck) detected. Usually from a crash.|https://wiki.archlinux.org/title/Pacman#\"Failed_to_init_transaction_(unable_to_lock_database)\"_error"
-        "ERR_PGP"     "Missing PGP key for AUR verification. Required to trust the source code.|https://wiki.archlinux.org/title/GnuPG#Import_a_public_key"
-        "ERR_ORPHANS" "Unused dependencies. Safe to prune to keep the system lean.|https://wiki.archlinux.org/title/Pacman#Removing_unused_packages_(orphans)"
-        "ERR_CONFLICT" "File path collision between packages. Manual path verification recommended.|https://wiki.archlinux.org/title/Pacman#\"Failed_to_commit_transaction_(conflicting_files)\"_error"
-        "ERR_CORRUPT" "Invalid package metadata/tarball. Likely a failed download or mirror sync.|https://wiki.archlinux.org/title/Pacman#\"Package_is_invalid_or_corrupted\"_error"
-        "ERR_MIRRORS" "Stale or slow mirrors detected. Refreshing mirrorlist via reflector.|https://wiki.archlinux.org/title/Mirrors#Mirror_ranking"
-        "ERR_LIB" "Missing shared library. Re-installing the provider package restores the .so file.|https://wiki.archlinux.org/title/System_maintenance#Check_for_broken_packages"
-    )
-        
-    local MEND_VERSION="0.5.0"
+
+    if command -v pacman &>/dev/null; then
+        MEND_PM="pacman"
+        PM_LOCK="/var/lib/pacman/db.lck"
+        PM_QUERY="pacman -Fq"
+        PM_INSTALL="sudo pacman -S"
+        PM_ORPHANS="pacman -Qdtq"
+        PM_SEARCH="pacman -Ssq"
+        PM_INFO="pacman -Si"
+        PM_DB_PATH="/var/lib/pacman/sync"
+        PM_HELPER="yay"
+        PM_DELIM="/"
+        PM_INDEX=2
+        PM_WIKI="https://wiki.archlinux.org"
+
+        # Arch-Specific Knowledge Base
+        MEND_KB=(
+            "ERR_LOCKED"  "Ghost lock file ($PM_LOCK) detected. Usually from a crash.|$PM_WIKI/title/Pacman#\"Failed_to_init_transaction_(unable_to_lock_database)\"_error"
+            "ERR_PGP"     "Missing PGP key for verification. Required to trust the source code.|$PM_WIKI/title/GnuPG#Import_a_public_key"
+            "ERR_ORPHANS" "Unused dependencies. Safe to prune to keep the system lean.|$PM_WIKI/title/Pacman#Removing_unused_packages_(orphans)"
+            "ERR_CONFLICT" "File path collision between packages. Manual path verification recommended.|$PM_WIKI/title/Pacman#\"Failed_to_commit_transaction_(conflicting_files)\"_error"
+            "ERR_CORRUPT" "Invalid package metadata/tarball. Likely a failed download or mirror sync.|$PM_WIKI/title/Pacman#\"Package_is_invalid_or_corrupted\"_error"
+            "ERR_MIRRORS" "Stale or slow mirrors detected. Refreshing repository metadata.|$PM_WIKI/title/Mirrors#Mirror_ranking"
+            "ERR_LIB"     "Missing shared library. Re-installing the provider package restores the .so file.|$PM_WIKI/title/System_maintenance#Check_for_broken_packages"
+        )
+
+    # Mint/Ubuntu/Debian Start
+    elif command -v apt &>/dev/null; then
+        MEND_PM="apt"
+        PM_LOCK="/var/lib/dpkg/lock-frontend"
+        PM_QUERY="apt-file search"
+        PM_INSTALL="sudo apt install"
+        PM_ORPHANS="apt autoremove --dry-run"
+        PM_SEARCH="apt-cache search"
+        PM_INFO="apt show"
+        PM_DB_PATH="/var/lib/apt/lists"
+        PM_HELPER=""
+        PM_DELIM=":"     
+        PM_INDEX=1       
+        PM_ORP_CLEAN=2   
+        # Auto-detect specific Apt-based distro for better Wiki links
+        if grep -qi "ubuntu" /etc/os-release 2>/dev/null; then
+            PM_WIKI="https://help.ubuntu.com"
+        elif grep -qi "mint" /etc/os-release 2>/dev/null; then
+            PM_WIKI="https://linuxmint-help.org"
+        else
+            PM_WIKI="https://wiki.debian.org"
+        fi
+
+        MEND_KB=(
+            "ERR_LOCKED"   "Apt frontend lock ($PM_LOCK) detected. Usually an update is running.|$PM_WIKI"
+            "ERR_PGP"      "GPG verification failed. Untrusted repository signature.|https://debian-administration.org/article/Secure_apt"
+            "ERR_ORPHANS"  "Unused packages (autoremove candidates). Safe to prune.|$PM_WIKI"
+            "ERR_CONFLICT" "Package file overlap detected. Manual dpkg override may be needed.|$PM_WIKI"
+            "ERR_CORRUPT"  "Hash sum mismatch or partial download. Metadata/Package corruption.|$PM_WIKI"
+            "ERR_MIRRORS"  "Repository connection failed. Refreshing local package lists.|$PM_WIKI"
+            "ERR_LIB"      "Missing shared library. Re-installing the provider package restores the .so file.|$PM_WIKI"
+        )
+
+    # openSUSE (Zypper) Start
+    elif command -v zypper &>/dev/null; then
+        MEND_PM="zypper"
+        PM_LOCK="/var/run/zypp.pid"
+        PM_QUERY="zypper search --provides --match-exact"
+        PM_INSTALL="sudo zypper install"
+        PM_ORPHANS="zypper packages --unneeded"
+        PM_SEARCH="zypper search"
+        PM_INFO="zypper info"
+        PM_DB_PATH="/var/cache/zypp/raw"
+        PM_HELPER=""
+        PM_DELIM="|"     
+        PM_INDEX=2       
+        PM_ORP_CLEAN=2   
+        PM_WIKI="https://en.opensuse.org/Portal:Tumbleweed"
+
+        MEND_KB=(
+            "ERR_LOCKED"   "Zypper is currently locked by another process ($PM_LOCK).|$PM_WIKI"
+            "ERR_PGP"      "GPG signature verification failed. Untrusted repository key.|$PM_WIKI"
+            "ERR_ORPHANS"  "Unneeded dependencies detected. Safe to prune to save space.|$PM_WIKI"
+            "ERR_CONFLICT" "Package file conflict. Zypper requires manual resolution.|$PM_WIKI"
+            "ERR_CORRUPT"  "Checksum mismatch. The package or metadata is corrupted.|$PM_WIKI"
+            "ERR_MIRRORS"  "Network error or stale repository metadata.|$PM_WIKI"
+            "ERR_LIB"      "Missing shared library. Re-installing the provider package restores the .so file.|$PM_WIKI"
+        )
+
+    # Fedora (DNF) Start
+    elif command -v dnf &>/dev/null; then
+        MEND_PM="dnf"
+        PM_LOCK="/var/run/dnf.pid"
+        PM_QUERY="dnf repoquery --whatprovides"
+        PM_INSTALL="sudo dnf install"
+        PM_ORPHANS="dnf autoremove --assumeno"
+        PM_SEARCH="dnf search"
+        PM_INFO="dnf info"
+        PM_DB_PATH="/var/cache/dnf"
+        PM_HELPER=""
+        PM_DELIM=" "
+        PM_INDEX=1
+        PM_ORP_CLEAN=1
+        PM_WIKI="https://docs.fedoraproject.org"
+        PM_UPDATE="sudo dnf makecache --refresh"
+
+        MEND_KB=(
+            "ERR_LOCKED"   "DNF is currently locked by another process ($PM_LOCK).|$PM_WIKI"
+            "ERR_PGP"      "GPG signature verification failed. Untrusted repository key.|$PM_WIKI"
+            "ERR_ORPHANS"  "Unused dependencies detected. Safe to prune to save space.|$PM_WIKI"
+            "ERR_CONFLICT" "Package transaction conflict. DNF requires manual resolution.|$PM_WIKI"
+            "ERR_CORRUPT"  "Metadata or package checksum mismatch.|$PM_WIKI"
+            "ERR_MIRRORS"  "Failed to synchronize cache for repo. Check connection or mirrors.|$PM_WIKI"
+            "ERR_LIB"      "Missing shared library. Re-installing the provider package restores the .so file.|$PM_WIKI"
+        )
+    fi
+
+    # Ensure apt-file is installed for Mint/Ubuntu users
+    if [[ "$MEND_PM" == "apt" ]] && ! command -v apt-file >/dev/null 2>&1; then
+        print -P "%F{yellow}Mend:%f Dependency %F{cyan}'apt-file'%f is missing."
+        print -P "      Required for library searches. Run: %F{green}sudo apt install apt-file && sudo apt-file update%f\n"
+    fi    
+
+    # Abort if no supported PM is found
+    if [[ "$MEND_PM" == "unknown" ]]; then
+        print -P "%F{red}Mend:%f No supported package manager detected."
+        return 1
+    fi
     
     # 1. Grab history context
     local last_full_cmd=$(history -n -1 | grep -v "mend")
@@ -30,17 +148,17 @@ function mend() {
     local cmd_base=$(echo "$last_full_cmd" | awk '{print $1}')
 
     # 2. Check for Database Lock
-    if [[ -f /var/lib/pacman/db.lck ]]; then
+    if [[ -n "$PM_LOCK" && -f "$PM_LOCK" ]]; then
         local lock_entry="${MEND_KB[ERR_LOCKED]}"
         local lock_info="${lock_entry%%|*}"
         local lock_wiki="${lock_entry##*|}"
 
         local lock_choice=$(echo -e "No\nYes (Remove Lock)" | fzf --height 25% --layout=reverse --no-clear \
-            --header "Mend: $lock_info"$'\n'"Shortcut: [w] Open Arch Wiki" \
+            --header "Mend: $lock_info"$'\n'"Shortcut: [w] Open Wiki" \
             --bind "w:execute-silent( (xdg-open '$lock_wiki' >/dev/null 2>&1) &! )")
             
         if [[ "$lock_choice" == "Yes (Remove Lock)" ]]; then
-            sudo rm /var/lib/pacman/db.lck && echo "Lock removed."
+            sudo rm -f "$PM_LOCK" && print -P "%F{green}Mend:%f Lock removed."
             return 0
         fi
     fi
@@ -56,13 +174,12 @@ function mend() {
         local log=$(history -n -$depth)
         
         # PGP Key detection
-        pgp_key=$(echo "$log" | grep -iE "unknown public key|could not be verified" | grep -oE '[A-F0-9]{16,40}' | tail -1)
-        
+        pgp_key=$(echo "$log" | grep -iE "unknown public key|could not be verified|NO_PUBKEY|could not be looked up|signature is unknown" | grep -oE '[A-Fa-f0-9]{8,40}' | tail -1)
+
         # Mirror failure detection
-        if echo "$log" | grep -qiE "Connection timed out|Could not resolve host|404 Not Found"; then
+        if echo "$log" | grep -qiE "Connection timed out|Could not resolve host|404 Not Found|Failed to fetch|Temporary failure in name resolution"; then
             mirror_fail=true
         fi
-
         # Library dependency detection
         lib_missing=$(echo "$log" | grep -oP "error while loading shared libraries: \K[^:]+" | tail -1)
 
@@ -79,12 +196,15 @@ function mend() {
         print -P "%F{yellow}Mend:%f Detected missing PGP key: %F{cyan}$pgp_key%f"
         
         local pgp_choice=$(echo -e "No\nYes (Import Key)" | fzf --height 25% --layout=reverse \
-            --header "Mend: $pgp_info"$'\n'"Shortcut: [w] Open Arch Wiki" \
+            --header "Mend: $pgp_info"$'\n'"Shortcut: [w] Open Wiki" \
             --bind "w:execute-silent( (xdg-open '$pgp_wiki' >/dev/null 2>&1) &! )")
 
         if [[ "$pgp_choice" == "Yes (Import Key)" ]]; then
+            local import_cmd="gpg --keyserver keyserver.ubuntu.com --recv-keys $pgp_key"
+            [[ "$MEND_PM" == "pacman" ]] && import_cmd="sudo pacman-key --recv-keys $pgp_key"
+
             print -P "\n%F{yellow}Mend:%f Fetching from keyserver.ubuntu.com..."
-            if gpg --keyserver keyserver.ubuntu.com --recv-keys "$pgp_key"; then
+            if eval "$import_cmd"; then
                 print -P "\n%F{green}Mend:%f Key imported. Re-running command..."
                 [[ -n "$last_full_cmd" ]] && print -z "$last_full_cmd"
                 return 0
@@ -102,19 +222,23 @@ function mend() {
         print -P "%F{red}Mend:%f Detected connection/mirror issues in history."
 
         local mir_choice=$(echo -e "No\nYes (Update Mirrors)" | fzf --height 25% --layout=reverse --no-clear \
-            --header "Mend: $mir_info"$'\n'"Shortcut: [w] Open Arch Wiki" \
+            --header "Mend: $mir_info"$'\n'"Shortcut: [w] Open Wiki" \
             --bind "w:execute-silent( (xdg-open '$mir_wiki' >/dev/null 2>&1) &! )")
 
         if [[ "$mir_choice" == "Yes (Update Mirrors)" ]]; then
-            print -P "\n%F{yellow}Mend:%f Running Reflector..."
-            sudo reflector --latest 10 --protocol https --sort rate --save /etc/pacman.d/mirrorlist
+            print -P "\n%F{yellow}Mend:%f Refreshing repository metadata..."
+            if [[ "$MEND_PM" == "apt" ]]; then
+                sudo apt update && sudo apt-file update
+            else
+                sudo ${${(z)PM_QUERY}/-Fq/-Fy}
+            fi
             print -P "%F{green}Mend:%f Mirrors updated."
             return 0
         fi
         echo ""
     fi
 
-    # Handle Missing Shared Library Fix (v0.5.0)
+    # Handle Missing Shared Library Fix
     if [[ -n "$lib_missing" ]]; then
         # 1. Physical Verification: Is it actually gone?
         if [[ -f "/usr/lib/$lib_missing" || -f "/lib/$lib_missing" ]]; then
@@ -130,24 +254,42 @@ function mend() {
         print -P "%F{red}Mend:%f Confirmed missing library: %F{cyan}$lib_missing%f"
 
         # 2. Files DB Age Check (7 days)
-        local old_db=(/var/lib/pacman/sync/*.files(Nm+7))
-        if [[ -z $(ls /var/lib/pacman/sync/*.files 2>/dev/null) || -n "$old_db" ]]; then
-            print -P "%F{yellow}Mend:%f Files database is missing or old. Search might be inaccurate."
+        local old_db=($PM_DB_PATH/*.files(Nm+7))
+        if [[ -z $(ls $PM_DB_PATH/*.files 2>/dev/null) || -n "$old_db" ]]; then
+            print -P "%F{yellow}Mend:%f File database is missing or outdated — search results may be incomplete."
+            print -P "  Try: %F{yellow}sudo ${${(z)PM_QUERY}/-Fq/-Fy}%f"
         fi
 
         # 3. Search logic: Try exact match, fallback to base name if versioned (.so.X) fails
         local search_term="$lib_missing"
-        local raw_matches=($(pacman -Fq "$search_term" 2>/dev/null))
+        local raw_matches=($(${(z)PM_QUERY} "$search_term" 2>/dev/null))
         
         if [[ ${#raw_matches[@]} -eq 0 ]]; then
             search_term="${lib_missing%.so*}.so"
-            raw_matches=($(pacman -Fq "$search_term" 2>/dev/null))
+            raw_matches=($(${(z)PM_QUERY} "$search_term" 2>/dev/null))
         fi
 
-        # 4. Extract clean package names
+        # 4. Extract clean package names (Agnostic Version)
         local providers=()
         for match in $raw_matches; do
-            local pkg="${${(s:/:)match}[2]}"
+            local pkg=""
+            if [[ "$MEND_PM" == "pacman" ]]; then
+                # pacman -Fq returns "repo/package" or just "package"
+                pkg="${match##*/}"
+            elif [[ "$MEND_PM" == "zypper" ]]; then
+                # zypper search --provides returns "i | package | summary | type"
+                pkg="${${(s:|:)match}[2]}"
+            elif [[ "$MEND_PM" == "dnf" ]]; then
+                pkg="${match%-*-*}"
+            else
+                # Default agnostic extraction (Apt, etc.)
+                pkg="${${(s:$PM_DELIM:)match}[$PM_INDEX]}"
+            fi
+            
+            # Clean up: strip any accidental spaces or colons
+            pkg="${pkg//[[:space:]]/}"
+            pkg="${pkg%:}"
+
             [[ -n "$pkg" ]] && providers+=("$pkg")
         done
         providers=(${(u)providers})
@@ -155,13 +297,13 @@ function mend() {
         # 5. UI Result with KB integration
         if [[ ${#providers[@]} -gt 0 ]]; then
             local lib_choice=$(printf "%s\n" "${providers[@]}" | fzf --height 40% --layout=reverse --border \
-                --header "Mend: $lib_desc"$'\n'"Shortcut: [w] Open Arch Wiki" \
-                --preview "pacman -Si {1}" \
+                --header "Mend: $lib_desc"$'\n'"Shortcut: [w] Open Wiki" \
+                --preview "$PM_INFO {1}" \
                 --bind "w:execute-silent( (xdg-open '$lib_wiki' >/dev/null 2>&1) &! )")
 
             if [[ -n "$lib_choice" ]]; then
                 print -P "\n%F{yellow}Mend:%f Preparing to re-install %F{cyan}$lib_choice%f to restore shared libraries..."
-                print -z "sudo pacman -S $lib_choice"
+                print -z "$PM_INSTALL $lib_choice"
                 return 0
             fi
         else
@@ -173,58 +315,124 @@ function mend() {
     # 4. Command Not Found Check
     if ! command -v "$cmd_base" >/dev/null 2>&1; then
         echo "'$cmd_base' not found. Searching for owner..."
-        if [[ -z $(ls /var/lib/pacman/sync/*.files 2>/dev/null) ]]; then
-            if [[ $(echo -e "No\nYes (Update Now)" | fzf --height 15% --header "Run 'sudo pacman -Fy'?") == "Yes (Update Now)" ]]; then
-                sudo pacman -Fy
-            else
-                return 1
+        
+        # Agnostic database check: looks for Arch .files or Apt-file cache
+        local db_stale=false
+        if [[ "$MEND_PM" == "pacman" ]]; then
+            # Check if file database is missing or older than 7 days
+            if [[ -z $(ls $PM_DB_PATH/*.files 2>/dev/null) ]] || \
+               [[ -n $(find $PM_DB_PATH -name "*.files" -mtime +7 2>/dev/null) ]]; then
+                db_stale=true
+            fi
+        elif [[ "$MEND_PM" == "apt" ]]; then
+            [[ ! -d "/var/cache/apt/apt-file" ]] && db_stale=true
+        fi
+
+        if [[ "$db_stale" == true ]]; then
+            local update_cmd="sudo apt update && sudo apt-file update"
+            [[ "$MEND_PM" == "pacman" ]] && update_cmd="sudo ${${(z)PM_QUERY}/-Fq/-Fy}"
+
+            local db_choice=$(echo -e "No\nYes (Update Now)" | fzf --height 15% --header "File database missing or old. Run '$update_cmd'?")
+            if [[ "$db_choice" == "Yes (Update Now)" ]]; then
+                eval "$update_cmd"
+            elif [[ -z "$db_choice" || "$db_choice" == "No" ]]; then
+                # If user escapes or says No, can't search for owner reliably
+                # but will try to fall through to orphans if possible
+                pkg=""
             fi
         fi
 
-        local owner=$(pacman -Fq "/usr/bin/$cmd_base" | head -n 1)
+        # Apt-file doesn't need the full path, pacman -F does.
+        local search_target="$cmd_base"
+        [[ "$MEND_PM" == "pacman" ]] && search_target="/usr/bin/$cmd_base"
+        
+        local owner=$(${(z)PM_QUERY} "$search_target" | head -n 1)
         local pkg=${owner:-$cmd_base}
     else
-        # 5. History Package Search
+        # 5. History Package Search (Triggered if command exists but the exit code was non-zero)
         if [[ ! "$cmd_base" =~ ^(echo|ls|cd|pwd|cat|history|mend)$ ]]; then
-            local last_pac_cmd=$(history | grep -E 'pacman|yay|paru' | tail -n 1 | sed 's/^[ ]*[0-9]*[ ]*//')
+            # Search history for the last mention of the current package manager (apt/pacman/yay)
+            local last_pac_cmd=$(history | grep -iE "${MEND_PM}|${PM_HELPER:-__none__}" | tail -n 1 | sed 's/^[ ]*[0-9]*[ ]*//')
             local pkg=$(echo "$last_pac_cmd" | awk '{print $NF}')
         fi
     fi
-
+        
     # 6. FZF Selection Logic
     if [[ -n "$pkg" ]]; then
         local last_exit_code=$(fc -ln -1 | awk '{print $NF}' > /dev/null; echo $?) 
 
         if ! command -v "$cmd_base" >/dev/null 2>&1 || [[ $last_exit_code -ne 0 ]]; then
             local clean_pkg=$(echo "$pkg" | sed 's|.*/||')
-            local selection=$( (pacman -Ssq "^${clean_pkg}$" || pacman -Ssq "$clean_pkg"; yay -Ssq "$clean_pkg" 2>/dev/null) | awk '!x[$0]++' | fzf \
+            local selection=$( (${(z)PM_SEARCH} "^${clean_pkg}$" || ${(z)PM_SEARCH} "$clean_pkg"; [[ -n "$PM_HELPER" ]] && $PM_HELPER -Ssq "$clean_pkg" 2>/dev/null) | awk '!x[$0]++' | fzf \
                 --height 40% --layout=reverse --border --header "Mend: Fix for '$clean_pkg'" \
-                --preview "pacman -Si {1} 2>/dev/null || yay -Si {1} 2>/dev/null || echo 'No info available'")
+                --preview "$PM_INFO {} 2>/dev/null || [[ -n '$PM_HELPER' ]] && $PM_HELPER -Si {} 2>/dev/null || echo 'No info available'")
                 
             if [[ -n "$selection" ]]; then
-                local manager="yay"
-                pacman -Sp "$selection" >/dev/null 2>&1 && manager="sudo pacman"
+                local manager="$PM_HELPER"
+                
+                # Check if the package is in the official repositories
+                ${${(z)PM_INSTALL}/sudo /} -Sp "$selection" >/dev/null 2>&1 && manager="$PM_INSTALL"
+                
+                # Fallback if no helper exists and not in official repos
+                [[ -z "$manager" ]] && manager="$PM_INSTALL"
+
                 print -z "$manager -S $selection"
                 return 0
             fi
         fi
     fi
 
-    # 7. THE JANITOR (Orphan Cleanup)
-    local orphans=$(pacman -Qdtq)
+    # 7. THE JANITOR (Agnostic Orphan Cleanup)
+    local raw_orphans=()
+    
+    if [[ "$MEND_PM" == "apt" ]]; then
+        # Capture dry-run output and filter 'Remv' lines
+        local dr_output=$(${(z)PM_ORPHANS} 2>/dev/null)
+        raw_orphans=($(echo "$dr_output" | grep '^Remv' | cut -d' ' -f$PM_ORP_CLEAN))
+        
+    elif [[ "$MEND_PM" == "zypper" ]]; then
+        # Filter Zypper table headers/decorations and grab the package name column
+        local zy_output=$(${(z)PM_ORPHANS} 2>/dev/null)
+        raw_orphans=($(echo "$zy_output" | grep -vE '^(S  |---|Loading|Reading|i  |v  )' | cut -d'|' -f$PM_ORP_CLEAN | tr -d ' '))
+        
+    elif [[ "$MEND_PM" == "dnf" ]]; then
+        # Filter DNF output to get package names
+        local dnf_output=$(${(z)PM_ORPHANS} 2>/dev/null)
+        raw_orphans=($(echo "$dnf_output" | sed -n '/^Removing:/,$p' | grep -vE '^(Removing:|Transaction|---)' | awk '{print $1}'))
+        
+    else
+        # Standard clean list for pacman
+        raw_orphans=($(${(z)PM_ORPHANS} 2>/dev/null))
+    fi
+
+    local orphans=($raw_orphans)
+
     if [[ -n "$orphans" ]]; then
         local orp_entry="${MEND_KB[ERR_ORPHANS]}"
-        local orp_info="${orp_entry%%|*}"
-        local orp_wiki="${orp_entry##*|}"
+        local orp_info="${orp_entry%%|*}" orp_wiki="${orp_entry##*|}"
 
         print -P "\n%F{blue}Mend:%f Your system has orphaned dependencies."
         
         local orp_choice=$(echo -e "No\nYes (Cleanup)" | fzf --height 25% --layout=reverse --no-clear \
-            --header "Mend: $orp_info"$'\n'"Shortcut: [w] Open Arch Wiki" \
+            --header "Mend: $orp_info"$'\n'"Shortcut: [w] Open Wiki" \
             --bind "w:execute-silent( (xdg-open '$orp_wiki' >/dev/null 2>&1) &! )")
 
         if [[ "$orp_choice" == "Yes (Cleanup)" ]]; then
-            sudo pacman -Rns $orphans
+            local cmd=""
+            
+            if [[ "$MEND_PM" == "apt" ]]; then
+                cmd="sudo apt autoremove"
+            elif [[ "$MEND_PM" == "zypper" ]]; then
+                # Clean dependencies while removing the identified orphans
+                cmd="sudo zypper remove --clean-deps ${orphans[@]}"
+            elif [[ "$MEND_PM" == "dnf" ]]; then
+                cmd="sudo dnf autoremove"
+            else
+                # Arch/Pacman logic (converts -S to -Rns)
+                cmd="sudo ${${(z)PM_INSTALL}/-S/-Rns} ${orphans[@]}"
+            fi
+            
+            print -z "$cmd"
             return 0
         fi
     elif [[ "$mirror_fail" == false && -z "$pgp_key" && -z "$pkg" ]]; then

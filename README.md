@@ -1,137 +1,55 @@
 # Mend
 
-**VERSION: v0.5.0**
+Version: [0.6.0]
 
-**Mend** is a modular, fzf-powered recovery tool for Arch Linux. It "mends" your broken command chain by detecting failures (like missing PGP keys or locked databases) and offering a context-aware fix.
+**Mend** is a clever little helper for your Linux computer that steps in when things go wrong.
+If you try to run a command and it fails, or if your system says a file is missing, you just type `mend` and it tries to fix the problem for you.
+Mend was originally created to manage my own system running on Arch. Now it works across most popular versions of Linux like Arch, openSUSE, Fedora, and Ubuntu/Mint.
 
 ![RTFM Demo](assets/demo.png)
 
 
-## Features
-* **[NEW v0.5.0] Shared Library Repair**: Identifies an error while loading shared libraries from your shell history.
-* **Intelligent Version Fallback**: If an exact library version (e.g., .so.13) is no longer in the repos, Mend automatically searches for the base provider (e.g., .so) to bridge the gap between your apps and the latest Arch rolling-release updates.
-* **Physical File Verification**: Performs a systematic check in `/usr/lib/` to confirm a library is truly missing before suggesting a reinstall, preventing unnecessary package operations.
-* **[NEW v0.4.0] Integrated Arch Wiki**: Press `[w]` inside any fix menu to open web browser directly to the relevant troubleshooting section on the Arch Wiki.
-* **[NEW v0.3.0] The Janitor (Orphan Sweep)**: Proactive detection of unused dependencies (`-Qdtq`) with a one-click cleanup option to keep your system lean.
-* **[NEW v0.3.0] Smart Mirror Refresh**: Integrated `reflector` support to automatically fix `404` or `Connection Timeout` errors in your package manager.
-* **[NEW v0.3.0] Recursive History Scanning**: High-performance iterative scanning that "digs deeper" into your history to find errors, even if you've run "noise" commands like `ls` or `cd` in between.
-* **PGP Key Automation**: Detects "Unknown Public Key" errors during AUR installs and fetches them from `keyserver.ubuntu.com` automatically.
-* **Intelligent Package Correction**: If a package install fails, `mend` searches both official repositories and the AUR to find the correct match.
-* **Command-to-Package Mapping**: Uses `pacman -Fy` logic to identify which package provides a missing binary (e.g., offering to install `tree` when the command is not found).
-* **Automatic Lock Detection**: Identifies `/var/lib/pacman/db.lck` and offers an interactive prompt to remove it safely.
-* **Resource-efficient Loading**: Built for Zsh using `autoload` functionality. The logic only hits your RAM when you actually call the command.
+## What it does for you
+
+Most of the time, Linux errors are just small hurdles. You might be missing a specific bit of software, a security key, or another update might be blocking your progress. Mend looks at the very last thing that happened on your screen, figures out why it failed, and offers you a one-click fix.
+It can help you find and install missing programmes even if you don't know their exact names. It also handles the "behind the scenes" maintenance, like clearing out old files you no longer need or refreshing your connection to the update servers if they're being slow.
+
+## Must have for **Mend** to work
+**Zsh**: The specific command-line shell the tool is written for.
+**fzf**: Provides the interactive menus and search windows.
+**sudo**: Required to fix system files or install software.
+**Package Managers**: One of the following: pacman (Arch), apt (Ubuntu/Mint), zypper (openSUSE), or dnf (Fedora).
+**apt-file**: Only for Ubuntu or Mint systems to find missing library files.
+**Standard Linux Tools**: Uses common tools like grep, sed, awk, and history to read and understand your error messages.
+**Internet Access**: Needed to fetch security keys or download missing files.
+
+## Getting started
+
+1. **Download the tool**
+Copy the files to your computer by running:
+ `git clone https://github.com/Rakosn1cek/mend.git ~/mend`
+
+2. **Set it up**
+Add this line to the bottom of your `.zshrc` file:
+ `source ~/mend/mend.plugin.zsh`
+
+3. **Initialize File Database (Arch only)**
+For "Command Not Found" and library repairs to work, sync your database:
+ `sudo pacman -Fy`
+> *Note: From v0.5.0, Mend will prompt you if this is missing or older than 7 days.*
+
+4. **Ready to go**
+Restart your terminal. Now, whenever you see an error, just type `mend`.
+
+## How to use it
+
+If you see an error like "command not found" or "missing library," simply type mend immediately after. A menu will pop up with the most likely solutions. Pick the one that looks right, and Mend will take care of the rest. You can also press [w] while in the menu to open a relevant help page in your web browser.
+
+## A quick note on safety
+
+Mend is designed to be a helpful assistant, not a replacement for your own judgement. It will always ask for your permission before making any changes or installing new software. 
 
 ---
-
-## Prerequisites
-
-Ensure you have the following installed on your Arch system:
-* **fzf** (`sudo pacman -S fzf`)
-* **Zsh** (The shell this is built for)
-* **yay or paru** (for AUR support)
-* **pacman** (standard on Arch)
-* **pacman-contrib** (Optional: for paccache cleanup)
-
----
-
-## Installation
-
-## Clone the repository
-**Clone mend to your preferred directory:**
-
-```zsh
-git clone https://github.com/Rakosn1cek/mend.git /path/to/your/choice/mend
-```
-## Installation instruction for OMZ users:
-```zsh
-git clone https://github.com/Rakosn1cek/mend.git ${ZSH_CUSTOM:-~/.oh-my-zsh/custom}/plugins/mend
-```
-## Add 'mend' to the plugins array in your ~/.zshrc
-**plugins=(... mend)**
-
-## Configure Zsh
-**Manual / Vanilla Zsh.**
-**Add the following line to your ~/.zshrc:**
-```zsh
-source /path/to/your/choice/mend/mend.plugin.zsh
-```
-## Initialize File Database
-**For Command Not Found and Shared Library Repair to function, your local file database must be synced:**
-```zsh
-sudo pacman -Fy
-```
-> **Note**: Mend v0.5.0 will now prompt you to run this if your database is missing or older than 7 days.
-
-___
-
-## Usage
-Simply run `mend` after a failed command or a "command not found" error.
-**Example 1: Missing Binary**
-```zsh
-❯ tree
-zsh: command not found: tree
-
-❯ mend
-# fzf opens, searches for 'tree', and prepares the install command
-```
-**Example 2: PGP Signature Error (AUR) [NEW v0.2.0]**
-```zsh
-❯ yay -S some-aur-package
-==> ERROR: One or more PGP signatures could not be verified!
-unknown public key 1397BC53640DE551
-
-❯ mend
-mend: Detected missing PGP key: 1397BC53640DE551
-Import this key from keyserver? (y/n) y
-# mend fetches the key and puts the 'yay' command back in your buffer
-```
-**Example 3: Database Lock Error [NEW v0.4.0]**
-```zsh
-❯ sudo pacman -S tree
-error: failed to init transaction (unable to lock database)
-if you're sure a package manager is not already running, you can remove /var/lib/pacman/db.lck
-
-❯ mend
-# Mend detects the ghost lock, offers a fix, and provides the Wiki shortcut
-Mend: Ghost lock file detected. This typically occurs after a crash.
-[w] Wiki: [System maintenance](https://wiki.archlinux.org/title/Pacman#%22Failed_to_init_transaction_(unable_to_lock_database)%22_error)
-```
-**Example 4: Missing Library [New v0.5.0]**
-```zsh
-❯ teamspeak3
-teamspeak3: error while loading shared libraries: libssl.so.1.1: cannot open shared object file
-
-❯ mend
-# Mend detects the version mismatch, finds the provider, and offers a fix
-```
-
----
-
-## License
-MIT © 2026 Rakosn1cek. Original logic and patterns for Arch-specific error interception. Attribution is required for any redistribution or derivative works.
-
-[⭐ Star mend on GitHub](https://github.com/Rakosn1cek/mend)
-
----
-
-## Support
-If **mend** saved you some time today, feel free to buy me a coffee!
-
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/Rakosn1cek)
-
-## Roadmap
-### v0.2.0 - The "Signature" Update (Current)
-- [x] **PGP Key Auto-Fetch**: Detect GPG verification failures during AUR installs and fetch missing keys automatically.
-- [x] **History Resilience**: Migration to `history -n` to prevent `$EDITOR` conflicts.
-- [x] **Terminal Buffer Re-injection**: Re-propagate fixed commands back to the prompt.
-
-### v0.3.0 - Intelligence & Cleanup
-- [x] **Orphan Cleanup**: Add a prompt to identify and remove orphaned dependencies (`-Rns`) after an uninstall.
-- [x] **Dynamic History Depth**: Automatically increase history search depth if a fix isn't found in the initial buffer.
-- [x] **Mirrorlist Health**: Detect "connection timed out" errors and offer to trigger a `reflector` mirror update.
-
-### Long-term Research
-- [x] **Contextual Wiki Links**: Provide a direct URL to the relevant Arch Wiki section alongside the fix. [Added in v0.4.0]
 
 **In progress**
 - [ ] **Smart History Search**: Suggest the most similar successful command from history when a typo occurs.
@@ -144,9 +62,21 @@ If **mend** saved you some time today, feel free to buy me a coffee!
 For a detailed history of all versions and technical changes, please see the [CHANGELOG.md](https://github.com/Rakosn1cek/mend/blob/main/CHANGELOG.md).
 
 ## ⚠️ Known Issues
-* **Zsh History Settings:** If your `HISTSIZE` is set extremely low or if you use `setopt HIST_IGNORE_ALL_DUPS`, mend might struggle to find the original failed command. 
-* **Keyserver Downtime:** mend relies on `keyserver.ubuntu.com`. If that server is down or blocked by your network/firewall, PGP auto-fetch will fail (mend will notify you if this happens).
-* **Subshell Execution:** Because mend relies on `history -n`, it may not detect errors generated inside nested subshells or some complex pipe chains.
-* **Non-Standard Helpers:** Currently optimised for `yay`, `paru`, and `makepkg`. Other AUR helpers might have slightly different error strings that aren't caught yet.
+* **Zsh History Settings:** Mend works by scanning your recent command history to find what went wrong. If your system is set up to ignore duplicate commands or has a very small history limit, Mend might not be able to "see" the error it needs to fix. 
+* **Keyserver Downtime:** Mend relies on `keyserver.ubuntu.com`. If that server is down or blocked by your network/firewall, PGP auto-fetch will fail (mend will notify you if this happens).
+* **Subshell Execution:** Commands run inside brackets, complex pipes, or nested scripts often don't save to the main history file in a way that Mend can read, so it might miss errors generated there.
+* **Unique Error Messages:** While Mend is built to understand most common Linux errors, a very obscure tool might use a unique error message that isn't in the "knowledge base" yet. If Mend doesn't recognise the text, it won't know how to offer a fix.
 
-> *Find a bug? Open an issue or submit a PR. I'm especially looking for PGP error strings from helpers other than yay/paru*
+## License
+MIT © 2026 Rakosn1cek. Attribution is required for any redistribution or derivative works.
+
+[⭐ Star mend on GitHub](https://github.com/Rakosn1cek/mend)
+
+---
+
+## Support
+If **mend** saved you some time today, feel free to buy me a coffee!
+
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/Rakosn1cek)
+
+> *Found a bug? Open an issue on GitHub, please.*
