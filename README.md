@@ -1,6 +1,6 @@
 # Mend
 
-Version: [0.6.0]
+Version: [0.7.0]
 
 **Mend** is a clever little helper for your Linux computer that steps in when things go wrong.
 If you try to run a command and it fails, or if your system says a file is missing, you just type `mend` and it tries to fix the problem for you.
@@ -15,13 +15,13 @@ Most of the time, Linux errors are just small hurdles. You might be missing a sp
 It can help you find and install missing programmes even if you don't know their exact names. It also handles the "behind the scenes" maintenance, like clearing out old files you no longer need or refreshing your connection to the update servers if they're being slow.
 
 ## Must have for **Mend** to work
-**Zsh**: The specific command-line shell the tool is written for.
-**fzf**: Provides the interactive menus and search windows.
-**sudo**: Required to fix system files or install software.
-**Package Managers**: One of the following: pacman (Arch), apt (Ubuntu/Mint), zypper (openSUSE), or dnf (Fedora).
-**apt-file**: Only for Ubuntu or Mint systems to find missing library files.
-**Standard Linux Tools**: Uses common tools like grep, sed, awk, and history to read and understand your error messages.
-**Internet Access**: Needed to fetch security keys or download missing files.
+- **Zsh**: The specific command-line shell the tool is written for.
+- **fzf**: Provides the interactive menus and search windows.
+- **sudo**: Required to fix system files or install software.
+- **Package Managers**: One of the following: pacman (Arch), apt (Ubuntu/Mint), zypper (openSUSE), or dnf (Fedora).
+- **apt-file**: Only for Ubuntu or Mint systems to find missing library files.
+- **Standard Linux Tools**: Uses common tools like grep, sed, awk, and history to read and understand your error messages.
+- **Internet Access**: Needed to fetch security keys or download missing files.
 
 ## Getting started
 
@@ -43,7 +43,9 @@ Restart your terminal. Now, whenever you see an error, just type `mend`.
 
 ## How to use it
 
-If you see an error like "command not found" or "missing library," simply type mend immediately after. A menu will pop up with the most likely solutions. Pick the one that looks right, and Mend will take care of the rest. You can also press [w] while in the menu to open a relevant help page in your web browser.
+If you see an error like "command not found" or "missing library", simply type `mend` immediately after. A menu will pop up with the most likely solutions. Pick the one that looks right, and Mend will take care of the rest. You can also press [w] while in the menu to open a relevant help page in your web browser. 
+
+If you know you made a typo and want to pull a fix directly from your command history, run `mend -h` to open an interactive search that filters out mistakes and suggests the correct command. Once a fix is selected, Mend automatically purges all instances of that typo from your history to keep your command logs clean.
 
 ## A quick note on safety
 
@@ -52,7 +54,7 @@ Mend is designed to be a helpful assistant, not a replacement for your own judge
 ---
 
 **In progress**
-- [ ] **Smart History Search**: Suggest the most similar successful command from history when a typo occurs.
+- [x] **Smart History Search**: Suggest the most similar successful command from history when a typo occurs.
 
 **Future Research**
 - [ ] **Fish & Bash Ports**: Exploring a POSIX-compliant core to bring mend logic to other shells.

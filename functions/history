@@ -1,0 +1,50 @@
+# ------------------------------------------------------------------------------
+# MEND - The Distro-Agnostic Linux Command Assistant
+# Version: 0.7.0
+# Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
+# License: MIT
+# ------------------------------------------------------------------------------
+# This code is the original work of Lukas Grumlik - (Rakosn1cek). Attribution is required.
+# ------------------------------------------------------------------------------
+
+# 1. Grab the last typo
+local last_typo=$history[$((HISTCMD - 1))]
+local prefix="${last_typo[1,2]}"
+
+# 2. Get unique history entries, excluding 'mend' and the typo itself
+local -a hist_entries
+hist_entries=(${(u)history[(R)*]})
+local clean_pool=$(printf "%s\n" "${hist_entries[@]}" | grep -vaE "^mend|^${(b)last_typo}$")
+
+# 3. Filter by the first 2 characters, then let fzf rank the rest
+if [[ -n "$clean_pool" ]]; then
+    local suggestion
+    suggestion=$(echo "$clean_pool" | grep -a "^${prefix}" | fzf \
+        --height 40% --layout=reverse --border \
+        --header "Mend: Suggested fix for '$last_typo'" \
+        --query="$last_typo" \
+        --tiebreak=length,begin,index \
+        --scheme=history \
+        --select-1 --exit-0)
+
+    if [[ -n "$suggestion" ]]; then
+        print -P "%F{green}Mend:%f Correcting to: %F{cyan}$suggestion%f"
+        
+        # 1. Escape the typo for use in a search pattern
+        local escaped_typo="${(b)last_typo}"
+        
+        # 2. Delete ALL instances of this specific typo from the history
+        # We use sed to wipe it from the physical file immediately
+        sed -i "/;${escaped_typo}$/d" "$HISTFILE"
+        
+        # 3. Wipe it from the current internal buffer 
+        # We re-read the file to sync the deletions
+        fc -p "$HISTFILE"
+        fc -R "$HISTFILE"
+
+        # 4. Push the fix to the buffer
+        print -z "$suggestion"
+    fi
+else
+    print -P "%F{red}Mend:%f No commands starting with '$prefix' found."
+fi

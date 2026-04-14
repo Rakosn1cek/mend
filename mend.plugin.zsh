@@ -1,10 +1,10 @@
 # ------------------------------------------------------------------------------
-# Mend (Distro-Agnostic Linux Command Assistant)
-# Version:      v0.6.0
-# Author:       Lukas Grumlik (Rakosn1cek)
-# Description:  Modular, fzf-powered recovery tool for multiple Linux distros.
-# Repository:   https://github.com/Rakosn1cek/mend
-# License:      MIT
+# MEND - The Distro-Agnostic Linux Command Assistant
+# Version: 0.7.0
+# Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
+# License: MIT
+# ------------------------------------------------------------------------------
+# This code is the original work of Lukas Grumlik - (Rakosn1cek). Attribution is required.
 # ------------------------------------------------------------------------------
 
 # Find the directory where this script is located

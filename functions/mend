@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # MEND - The Distro-Agnostic Linux Command Assistant
-# Version: 0.6.0
+# Version: 0.7.0
 # Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
 # License: MIT
 # ------------------------------------------------------------------------------
@@ -10,7 +10,7 @@
 function mend() {
     clear
     
-    local MEND_VERSION="0.6.0"
+    local MEND_VERSION="0.7.0"
     
     # --- Distro Detection & Driver Setup ---
     local MEND_PM="unknown"
@@ -141,11 +141,29 @@ function mend() {
         print -P "%F{red}Mend:%f No supported package manager detected."
         return 1
     fi
+
+    # Flag Handler
+    case "$1" in
+        --history|-h)
+            if [[ -f "$HOME/arch-projects/mend/functions/history" ]]; then
+                source "$HOME/arch-projects/mend/functions/history"
+                return 0
+            else
+                print -P "%F{red}Mend:%f History module not found at ~/arch-projects/mend/functions/history"
+                return 1
+            fi
+            ;;
+    esac
     
     # 1. Grab history context
-    local last_full_cmd=$(history -n -1 | grep -v "mend")
-    [[ -z "$last_full_cmd" ]] && last_full_cmd=$(history -n -2 | head -n 1)
-    local cmd_base=$(echo "$last_full_cmd" | awk '{print $1}')
+    local last_full_cmd=$history[$((HISTCMD - 1))]
+    
+    # If that is empty or just 'mend', look one further back.
+    if [[ -z "$last_full_cmd" || "$last_full_cmd" == "mend"* ]]; then
+        last_full_cmd=$history[$((HISTCMD - 2))]
+    fi
+    
+    local cmd_base=${last_full_cmd%% *}
 
     # 2. Check for Database Lock
     if [[ -n "$PM_LOCK" && -f "$PM_LOCK" ]]; then

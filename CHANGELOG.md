@@ -1,5 +1,23 @@
 ## 📜 CHANGELOG
 
+## [0.7.0] - 2026-04-14
+### Added
+- New `mend -h` flag to trigger an interactive history-based correction mode.
+- Automatic history purging: selecting a correction now removes all instances of that specific typo from the Zsh history file and internal buffer.
+- Integrated fzf scoring with a specific history scheme to better rank long command strings and complex arguments.
+
+### Improved
+- Refactored history search to use a prefix-based fuzzy match, significantly reducing noise from unrelated commands.
+- Optimized history handling for large files (20,000+ entries) by using native Zsh buffer management.
+- Enhanced typo detection by utilizing the full string length for weighted ranking in the suggestion menu.
+
+### Fixed
+- Resolved an issue where repeated typos would persist in the history list even after being corrected.
+- Fixed a bug causing history inflation when syncing buffers across multiple terminal sessions.
+- Corrected a scoring scheme error in fzf to ensure compatibility with standard Arch Linux installations.
+
+---
+
 ## [v0.6.0] - 2026-04-06
 ### Added
 - Distro-Agnostic Core: Full rewrite to support Arch (pacman), openSUSE (zypper), Fedora (dnf), and Ubuntu/Mint (apt).
