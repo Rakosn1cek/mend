@@ -8,8 +8,8 @@
 
 ### Improved
 - Refactored history search to use a prefix-based fuzzy match, significantly reducing noise from unrelated commands.
-- Optimized history handling for large files (20,000+ entries) by using native Zsh buffer management.
-- Enhanced typo detection by utilizing the full string length for weighted ranking in the suggestion menu.
+- Optimised history handling for large files (20,000+ entries) by using native Zsh buffer management.
+- Enhanced typo detection by utilising the full string length for weighted ranking in the suggestion menu.
 
 ### Fixed
 - Resolved an issue where repeated typos would persist in the history list even after being corrected.
