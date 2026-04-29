@@ -1,5 +1,9 @@
 # Mend
 
+![GitHub stars](https://img.shields.io/github/stars/Rakosn1cek/mend?style=flat&color=gold)
+[![Discord](https://img.shields.io/discord/1498959384389091368?label=Discord&logo=discord&logoColor=ffffff&color=7289da&labelColor=2c2f33)](https://discord.gg/1498959384389091368)
+![License](https://img.shields.io/github/license/Rakosn1cek/mend)
+
 Version: [0.7.0]
 
 **Mend** is a clever little helper for your Linux computer that steps in when things go wrong.
@@ -53,9 +57,6 @@ Mend is designed to be a helpful assistant, not a replacement for your own judge
 
 ---
 
-**In progress**
-- [x] **Smart History Search**: Suggest the most similar successful command from history when a typo occurs.
-
 **Future Research**
 - [ ] **Fish & Bash Ports**: Exploring a POSIX-compliant core to bring mend logic to other shells.
 
@@ -69,16 +70,19 @@ For a detailed history of all versions and technical changes, please see the [CH
 * **Subshell Execution:** Commands run inside brackets, complex pipes, or nested scripts often don't save to the main history file in a way that Mend can read, so it might miss errors generated there.
 * **Unique Error Messages:** While Mend is built to understand most common Linux errors, a very obscure tool might use a unique error message that isn't in the "knowledge base" yet. If Mend doesn't recognise the text, it won't know how to offer a fix.
 
-## License
-MIT © 2026 Rakosn1cek. Attribution is required for any redistribution or derivative works.
-
-[⭐ Star mend on GitHub](https://github.com/Rakosn1cek/mend)
+## Join the Discussion
+If you have questions, need help with a fix, or just want to discuss the logic behind this tool without the usual Reddit-style hostility, join the Discord. This is a safe space to talk shop, report bugs, and suggest features without being told to "RTFM."
+[![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/YOUR_INVITE_CODE)
 
 ---
 
 ## Support
-If **mend** saved you some time today, feel free to buy me a coffee!
-
+If **mend** saved you some time today, feel free to buy me a coffee and/or Star it!
+[⭐ Star mend on GitHub](https://github.com/Rakosn1cek/mend)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/Rakosn1cek)
 
 > *Found a bug? Open an issue on GitHub, please.*
+
+
+## License
+MIT © 2026 Rakosn1cek. Attribution is required for any redistribution or derivative works.
