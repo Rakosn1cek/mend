@@ -1,7 +1,7 @@
 # Mend
 
 ![GitHub stars](https://img.shields.io/github/stars/Rakosn1cek/mend?style=flat&color=gold)
-[![Discord](https://img.shields.io/discord/1498959384389091368?label=Discord&logo=discord&logoColor=ffffff&color=7289da&labelColor=2c2f33)](https://discord.gg/GFk45RdS)
+[![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/GFk45RdS)
 ![License](https://img.shields.io/github/license/Rakosn1cek/mend)
 
 Version: [0.7.0]
@@ -80,6 +80,7 @@ If you have questions, need help with a fix, or just want to discuss the logic b
 If **mend** saved you some time today, feel free to buy me a coffee and/or Star it!
 
 [⭐ Star mend on GitHub](https://github.com/Rakosn1cek/mend)
+
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20a%20Coffee-ffdd00?style=for-the-badge&logo=buy-me-a-coffee&logoColor=black)](https://www.buymeacoffee.com/Rakosn1cek)
 
 > *Found a bug? Open an issue on GitHub, please.*
