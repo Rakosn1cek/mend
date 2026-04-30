@@ -10,7 +10,7 @@ Version: [0.7.0]
 If you try to run a command and it fails, or if your system says a file is missing, you just type `mend` and it tries to fix the problem for you.
 Mend was originally created to manage my own system running on Arch. Now it works across most popular versions of Linux like Arch, openSUSE, Fedora, and Ubuntu/Mint.
 
-![RTFM Demo](assets/demo.png)
+![RTFM Demo](assets/demo2.png)
 
 
 ## What it does for you
