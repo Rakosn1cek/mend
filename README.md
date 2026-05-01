@@ -11,7 +11,12 @@ If you try to run a command and it fails, or if your system says a file is missi
 Mend was originally created to manage my own system running on Arch. Now it works across most popular versions of Linux like Arch, openSUSE, Fedora, and Ubuntu/Mint.
 
 ![RTFM Demo](assets/demo2.png)
-
+**Mend in Action:**
+<p align="center">
+  <video src="https://github.com/user-attachments/assets/40718abf-3418-4cf2-8e9f-7c3a9cb2d12b" width="600" controls muted autoplay loop>
+    Your browser does not support the video tag.
+  </video>
+</p>
 
 ## What it does for you
 
