@@ -1,0 +1,39 @@
+# Format: [VendorID:DeviceID] | GenericKey | Description
+# --- Graphics ---
+[10de:1c82] | generic-nvidia | NVIDIA GeForce GTX 1050 Ti
+[10de:2501] | generic-nvidia | NVIDIA GeForce RTX 3060
+[1002:743f] | generic-amd-gpu | AMD Radeon Graphics
+[1002:73ff] | generic-amd-gpu | AMD Radeon RX 6600
+[8086:191e] | generic-intel-graphics | Intel HD Graphics 515
+[8086:1916] | generic-intel-graphics | Intel HD Graphics 520
+[1002:1636] | generic-amd-gpu | AMD Renoir/Vega Graphics
+[1002:6810] | generic-amd-gpu | AMD Radeon R7 370 / R9 270X
+
+# --- Networking ---
+[8086:2723] | generic-intel-wifi | Intel Wi-Fi 6 AX200
+[10ec:c821] | generic-rtl8822be | Realtek RTL8822BE/8821CE
+[10ec:b822] | generic-rtl8822be | Realtek RTL8822BE
+[10ec:8168] | generic-realtek-ethernet | Realtek RTL8111/8168 Ethernet
+[8086:156f] | generic-intel-ethernet | Intel Ethernet Connection I219-LM
+[8086:24f3] | generic-intel-wifi | Intel Wireless 8260
+[8086:a370] | generic-intel-wifi | Intel Cannon Lake PCH CNVi WiFi
+[8086:15bc] | generic-intel-ethernet | Intel Ethernet Connection I219-V
+
+# --- Audio ---
+[8086:9d70] | generic-intel-audio | Intel Sunrise Point-LP HD Audio
+[10ec:0255] | generic-realtek-audio | Realtek ALC255/3234
+[1002:1637] | generic-amd-audio | AMD HDMI/DP Audio
+[1022:15e2] | generic-amd-audio | AMD Audio Coprocessor
+[1022:15e3] | generic-amd-audio | AMD HD Audio Controller
+[8086:a348] | generic-intel-audio | Intel Cannon Lake PCH cAVS Audio
+[1002:aab0] | generic-amd-audio | AMD Radeon HD 7000 Series HDMI Audio
+
+# --- USB Controllers ---
+[8086:9d2f] | generic-usb-controller | Intel USB 3.0 xHCI
+[1022:1639] | generic-usb-controller | AMD Renoir/Cezanne USB 3.1
+[10ec:8723] | generic-realtek-bluetooth | Realtek RTL8723BE Bluetooth
+[8086:a36d] | generic-usb-controller | Intel Cannon Lake PCH USB 3.1
+[1912:0014] | generic-usb-controller | Renesas uPD720201 USB 3.0
+
+# --- Input/Touchpads ---
+[8086:9d60] | generic-i2c-controller | Intel Serial IO I2C Controller

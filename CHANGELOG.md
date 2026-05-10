@@ -1,5 +1,18 @@
 ## 📜 CHANGELOG
 
+## [0.8.0] - 2026-05-10
+### Added
+- New hardware scanner feature (`mend -s`).
+- Support for Audio, Ethernet, and USB/Bluetooth controllers.
+- Mapping logic for pacman, apt, dnf, and zypper.
+- Expanded hardware.db with Intel, AMD, and Realtek IDs.
+
+### Changed
+- Updated lspci filtering to include a wider range of essential hardware.
+- Refined fzf interface for better package previews.
+
+---
+
 ## [0.7.0] - 2026-04-14
 ### Added
 - New `mend -h` flag to trigger an interactive history-based correction mode.

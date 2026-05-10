@@ -4,11 +4,15 @@
 [![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/GFk45RdS)
 ![License](https://img.shields.io/github/license/Rakosn1cek/mend)
 
-Version: [0.7.0]
+Version: [0.8.0]
 
-**Mend** is a clever little helper for your Linux computer that steps in when things go wrong.
-If you try to run a command and it fails, or if your system says a file is missing, you just type `mend` and it tries to fix the problem for you.
-Mend was originally created to manage my own system running on Arch. Now it works across most popular versions of Linux like Arch, openSUSE, Fedora, and Ubuntu/Mint.
+## Hardware Support
+Mend uses a local database (`hardware.db`) to map PCI IDs to distro-specific packages. Currently, it scans and identifies:
+* **Graphics:** NVIDIA, AMD, Intel.
+* **Networking:** Wi-Fi and Ethernet (Intel, Realtek, etc.).
+* **Audio:** Intel, AMD, and Realtek sound controllers.
+* **Connectivity:** USB 3.0/3.1 controllers and Bluetooth modules.
+* **Input:** I2C and HID Touchpads.
 
 ![RTFM Demo](assets/demo2.png)
 
@@ -56,6 +60,20 @@ Restart your terminal. Now, whenever you see an error, just type `mend`.
 If you see an error like "command not found" or "missing library", simply type `mend` immediately after. A menu will pop up with the most likely solutions. Pick the one that looks right, and Mend will take care of the rest. You can also press [w] while in the menu to open a relevant help page in your web browser. 
 
 If you know you made a typo and want to pull a fix directly from your command history, run `mend -h` to open an interactive search that filters out mistakes and suggests the correct command. Once a fix is selected, Mend automatically purges all instances of that typo from your history to keep your command logs clean.
+
+**Hardware Scan**
+To scan your system for missing drivers or recommended packages, run:
+`mend -s`
+
+Mend will cross-reference your hardware IDs against the local database and present a list of packages available for your specific distribution.
+
+**Missing Hardware**
+If your hardware is not detected, you can manually identify the IDs needed for the database by running:
+`lspci -nn | grep -E 'VGA|3D|Network|Ethernet|Audio|USB'`
+
+Look for the `[VendorID:DeviceID]` at the end of the relevant lines (e.g., `[8086:a370]`). These can be added to `data/hardware.db` following the existing format.
+
+> *You can always open an issue on GitHub. Include your scan results and I will add them to the database.*
 
 ## A quick note on safety
 

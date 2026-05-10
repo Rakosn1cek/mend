@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # MEND - The Distro-Agnostic Linux Command Assistant
-# Version: 0.7.0
+# Version: 0.8.0
 # Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
 # License: MIT
 # ------------------------------------------------------------------------------
@@ -10,7 +10,7 @@
 function mend() {
     clear
     
-    local MEND_VERSION="0.7.0"
+    local MEND_VERSION="0.8.0"
     
     # --- Distro Detection & Driver Setup ---
     local MEND_PM="unknown"
@@ -150,6 +150,16 @@ function mend() {
                 return 0
             else
                 print -P "%F{red}Mend:%f History module not found at ~/arch-projects/mend/functions/history"
+                return 1
+            fi
+            ;;
+        --scan|-s)
+            if [[ -f "$HOME/arch-projects/mend/lib/hardware.zsh" ]]; then
+                source "$HOME/arch-projects/mend/lib/hardware.zsh"
+                mend_scan_hardware
+                return 0
+            else
+                print -P "%F{red}Mend:%f Hardware module not found at ~/arch-projects/mend/lib/hardware.zsh"
                 return 1
             fi
             ;;
