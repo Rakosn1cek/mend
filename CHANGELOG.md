@@ -1,5 +1,22 @@
 ## 📜 CHANGELOG
 
+## [0.8.1] - 2026-05-11
+### Added
+- AUR Integration: Formal support for zsh-mend-git package installation.
+- Hardware Expansion: Added new mappings for Realtek Wi-Fi 6 (rtw89), NVIDIA 3070 Mobile, and Renesas USB controllers to hardware.db.
+- Path Validation: Added a safety check for $HISTFILE presence to prevent errors during history purging
+
+### Fixed
+- Path Portability: Migrated all internal logic from hardcoded home directory paths to dynamic $MEND_DIR and $MEND_DATA_DIR variables.
+- Environment Visibility: Implemented variable exporting in the plugin entry point to ensure sourced sub-modules inherit the correct data paths.
+- System Path Fallback: Added logic to automatically detect and use /usr/share/zsh/plugins/mend/ when running as a system-wide package.
+
+### Changed
+- Plugin Structure: Removed legacy rtfm bridge and default fix alias to allow for cleaner system-level integration and user customisation.
+- Refined Dependencies: Updated requirements to include pciutils and util-linux for better reliability on minimal installations.
+
+---
+
 ## [0.8.0] - 2026-05-10
 ### Added
 - New hardware scanner feature (`mend -s`).

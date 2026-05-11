@@ -8,6 +8,7 @@
 [8086:1916] | generic-intel-graphics | Intel HD Graphics 520
 [1002:1636] | generic-amd-gpu | AMD Renoir/Vega Graphics
 [1002:6810] | generic-amd-gpu | AMD Radeon R7 370 / R9 270X
+[10de:24dd] | generic-nvidia | NVIDIA GeForce RTX 3070 Mobile
 
 # --- Networking ---
 [8086:2723] | generic-intel-wifi | Intel Wi-Fi 6 AX200
@@ -18,6 +19,7 @@
 [8086:24f3] | generic-intel-wifi | Intel Wireless 8260
 [8086:a370] | generic-intel-wifi | Intel Cannon Lake PCH CNVi WiFi
 [8086:15bc] | generic-intel-ethernet | Intel Ethernet Connection I219-V
+[10ec:8852] | generic-rtw89 | Realtek RTL8852AE 802.11ax Wireless
 
 # --- Audio ---
 [8086:9d70] | generic-intel-audio | Intel Sunrise Point-LP HD Audio
@@ -27,6 +29,7 @@
 [1022:15e3] | generic-amd-audio | AMD HD Audio Controller
 [8086:a348] | generic-intel-audio | Intel Cannon Lake PCH cAVS Audio
 [1002:aab0] | generic-amd-audio | AMD Radeon HD 7000 Series HDMI Audio
+[10de:228b] | generic-nvidia | NVIDIA GA104 HD Audio Controller
 
 # --- USB Controllers ---
 [8086:9d2f] | generic-usb-controller | Intel USB 3.0 xHCI

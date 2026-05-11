@@ -4,7 +4,7 @@
 [![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/GFk45RdS)
 ![License](https://img.shields.io/github/license/Rakosn1cek/mend)
 
-Version: [0.8.0]
+Version: [0.8.1]
 
 ## Hardware Support
 Mend uses a local database (`hardware.db`) to map PCI IDs to distro-specific packages. Currently, it scans and identifies:
@@ -32,12 +32,25 @@ It can help you find and install missing programmes even if you don't know their
 - **Zsh**: The specific command-line shell the tool is written for.
 - **fzf**: Provides the interactive menus and search windows.
 - **sudo**: Required to fix system files or install software.
+- **pciutils**: Required for the hardware scanner to identify your devices.  
 - **Package Managers**: One of the following: pacman (Arch), apt (Ubuntu/Mint), zypper (openSUSE), or dnf (Fedora).
 - **apt-file**: Only for Ubuntu or Mint systems to find missing library files.
 - **Standard Linux Tools**: Uses common tools like grep, sed, awk, and history to read and understand your error messages.
 - **Internet Access**: Needed to fetch security keys or download missing files.
 
 ## Getting started
+
+**Option A**: Arch Linux (Recommended)
+Install the package using your favourite AUR helper:
+`yay -S mend-git`
+
+Then, add this line to the bottom of your .zshrc file:
+```zsh
+source /usr/share/zsh/plugins/mend/mend.plugin.zsh
+fpath=(/usr/share/zsh/plugins/mend/functions $fpath)
+autoload -Uz mend
+```
+**Option B**: Manual install
 
 1. **Download the tool**
 Copy the files to your computer by running:

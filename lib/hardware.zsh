@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # MEND - The Distro-Agnostic Linux Command Assistant
-# Version: 0.8.0
+# Version: 0.8.1
 # Descriptions:
 # mend -s hardware scanner
 # Parses system hardware, translates generic IDs to distro-specific packages, 
@@ -32,6 +32,7 @@ mend_get_pkg_name() {
                 generic-usb-controller) echo "usbutils" ;;
                 generic-realtek-bluetooth) echo "bluez" ;;
                 generic-i2c-controller) echo "i2c-tools" ;;
+                generic-rtw89) echo "rtw89-dkms-git" ;;
             esac
             ;;
         apt)
@@ -49,6 +50,7 @@ mend_get_pkg_name() {
                 generic-usb-controller) echo "usbutils" ;;
                 generic-realtek-bluetooth) echo "bluez" ;;
                 generic-i2c-controller) echo "i2c-tools" ;;
+                generic-rtw89) echo "rtw89-dkms" ;;
             esac
             ;;
         dnf)
@@ -66,6 +68,7 @@ mend_get_pkg_name() {
                 generic-usb-controller) echo "usbutils" ;;
                 generic-realtek-bluetooth) echo "bluez" ;;
                 generic-i2c-controller) echo "i2c-tools" ;;
+                generic-rtw89) echo "rtw89" ;;
             esac
             ;;
         zypper)
@@ -83,6 +86,7 @@ mend_get_pkg_name() {
                 generic-usb-controller) echo "usbutils" ;;
                 generic-realtek-bluetooth) echo "bluez" ;;
                 generic-i2c-controller) echo "i2c-tools" ;;
+                generic-rtw89) echo "rtw89-kmp-default" ;;
             esac
             ;;
     esac
@@ -90,7 +94,7 @@ mend_get_pkg_name() {
 
 # 2. Main Hardware Scanner
 mend_scan_hardware() {
-    local db_file="$HOME/arch-projects/mend/data/hardware.db"
+    local db_file="$MEND_DATA_DIR/hardware.db"
     
     if [[ ! -f "$db_file" ]]; then
         print -P "%F{red}Mend:%f Database file not found at $db_file"
