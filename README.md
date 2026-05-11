@@ -42,7 +42,8 @@ It can help you find and install missing programmes even if you don't know their
 
 **Option A**: Arch Linux (Recommended)
 Install the package using your favourite AUR helper:
-`yay -S mend-git`
+
+`yay -S zsh-mend-git`
 
 Then, add this line to the bottom of your .zshrc file:
 ```zsh
