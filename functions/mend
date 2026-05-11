@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # MEND - The Distro-Agnostic Linux Command Assistant
-# Version: 0.8.0
+# Version: 0.8.1
 # Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
 # License: MIT
 # ------------------------------------------------------------------------------
@@ -145,8 +145,11 @@ function mend() {
     # Flag Handler
     case "$1" in
         --history|-h)
-            if [[ -f "$HOME/arch-projects/mend/functions/history" ]]; then
-                source "$HOME/arch-projects/mend/functions/history"
+            if [[ -f "$MEND_DIR/functions/history" ]]; then
+                if [[ ! -f "$HISTFILE" ]]; then
+                    print -P "%F{yellow}Mend:%f Warning: \$HISTFILE not found. Typo purging will be skipped."
+                fi
+                source "$MEND_DIR/functions/history"
                 return 0
             else
                 print -P "%F{red}Mend:%f History module not found at ~/arch-projects/mend/functions/history"
@@ -154,12 +157,12 @@ function mend() {
             fi
             ;;
         --scan|-s)
-            if [[ -f "$HOME/arch-projects/mend/lib/hardware.zsh" ]]; then
-                source "$HOME/arch-projects/mend/lib/hardware.zsh"
+            if [[ -f "$MEND_DIR/lib/hardware.zsh" ]]; then
+                source "$MEND_DIR/lib/hardware.zsh"
                 mend_scan_hardware
                 return 0
             else
-                print -P "%F{red}Mend:%f Hardware module not found at ~/arch-projects/mend/lib/hardware.zsh"
+                print -P "%F{red}Mend:%f Hardware module not found at $MEND_DIR/lib/hardware.zsh"
                 return 1
             fi
             ;;
