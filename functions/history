@@ -1,50 +1,69 @@
 # ------------------------------------------------------------------------------
 # MEND - The Distro-Agnostic Linux Command Assistant
-# Version: 0.8.1
+# Version: 0.8.2
 # Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
 # License: MIT
 # ------------------------------------------------------------------------------
 # This code is the original work of Lukas Grumlik - (Rakosn1cek). Attribution is required.
 # ------------------------------------------------------------------------------
 
+# Ensure parameter module is loaded for $history associative array
+zmodload zsh/parameter 2>/dev/null
+
 # 1. Grab the last typo
+# HISTCMD is the current command, so HISTCMD-1 is the typo
 local last_typo=$history[$((HISTCMD - 1))]
-local prefix="${last_typo[1,2]}"
 
-# 2. Get unique history entries, excluding 'mend' and the typo itself
+if [[ -z "$last_typo" ]]; then
+    print -P "%F{red}Mend:%f Could not retrieve last typo from history."
+    return 1
+fi
+
+# 2. Get unique history entries
 local -a hist_entries
-hist_entries=(${(u)history[(R)*]})
-local clean_pool=$(printf "%s\n" "${hist_entries[@]}" | grep -vaE "^mend|^${(b)last_typo}$")
+hist_entries=(${(u)history})
 
-# 3. Filter by the first 2 characters, then let fzf rank the rest
-if [[ -n "$clean_pool" ]]; then
+# 3. Filter out 'mend' commands and the typo itself
+# Use Zsh's built-in array filtering for speed and reliability
+hist_entries=(${hist_entries:#mend*})
+hist_entries=(${hist_entries:#$last_typo})
+
+# 4. Suggest a fix using fzf
+if (( ${#hist_entries} > 0 )); then
     local suggestion
-    suggestion=$(echo "$clean_pool" | grep -a "^${prefix}" | fzf \
+    suggestion=$(print -l "${hist_entries[@]}" | fzf \
         --height 40% --layout=reverse --border \
         --header "Mend: Suggested fix for '$last_typo'" \
         --query="$last_typo" \
-        --tiebreak=length,begin,index \
-        --scheme=history \
-        --select-1 --exit-0)
+        --tiebreak=length,begin \
+        --exit-0)
 
     if [[ -n "$suggestion" ]]; then
         print -P "%F{green}Mend:%f Correcting to: %F{cyan}$suggestion%f"
         
-        # 1. Escape the typo for use in a search pattern
+        # 1. Escape the typo for use in search patterns
         local escaped_typo="${(b)last_typo}"
         
-        # 2. Delete ALL instances of this specific typo from the history
-        # We use sed to wipe it from the physical file immediately
-        sed -i "/;${escaped_typo}$/d" "$HISTFILE"
+        # 2. Sync and purge the typo from the history file
+        if [[ -f "$HISTFILE" ]]; then
+            fc -AI # Append only new increments to history file safely
+            # Remove all instances of the typo from the history file
+            # Handles both standard and EXTENDED_HISTORY formats
+            sed -i -e "\|\;${escaped_typo}$|d" -e "\|^${escaped_typo}$|d" "$HISTFILE"
+        fi
         
-        # 3. Wipe it from the current internal buffer 
-        # We re-read the file to sync the deletions
-        fc -p "$HISTFILE"
-        fc -R "$HISTFILE"
+        # 3. Refresh the current session history buffer
+        # This ensures the typo does not persist in the current session memory
+        if [[ -n "$HISTSIZE" && "$HISTSIZE" -gt 0 ]]; then
+            local old_histsize=$HISTSIZE
+            HISTSIZE=0
+            HISTSIZE=$old_histsize
+            fc -R # Reload history from the purged file
+        fi
 
         # 4. Push the fix to the buffer
         print -z "$suggestion"
     fi
 else
-    print -P "%F{red}Mend:%f No commands starting with '$prefix' found."
+    print -P "%F{red}Mend:%f No suitable command suggestions found in history."
 fi

@@ -9,6 +9,7 @@
 [1002:1636] | generic-amd-gpu | AMD Renoir/Vega Graphics
 [1002:6810] | generic-amd-gpu | AMD Radeon R7 370 / R9 270X
 [10de:24dd] | generic-nvidia | NVIDIA GeForce RTX 3070 Mobile
+[10de:0a6c] | generic-nvidia | NVIDIA GeForce NVS 3100M
 
 # --- Networking ---
 [8086:2723] | generic-intel-wifi | Intel Wi-Fi 6 AX200
@@ -20,6 +21,8 @@
 [8086:a370] | generic-intel-wifi | Intel Cannon Lake PCH CNVi WiFi
 [8086:15bc] | generic-intel-ethernet | Intel Ethernet Connection I219-V
 [10ec:8852] | generic-rtw89 | Realtek RTL8852AE 802.11ax Wireless
+[8086:10ea] | generic-intel-ethernet | Intel 82577LM Gigabit Network Connection
+[8086:4239] | generic-intel-wifi | Intel Centrino Advanced-N 6200
 
 # --- Audio ---
 [8086:9d70] | generic-intel-audio | Intel Sunrise Point-LP HD Audio
@@ -30,6 +33,8 @@
 [8086:a348] | generic-intel-audio | Intel Cannon Lake PCH cAVS Audio
 [1002:aab0] | generic-amd-audio | AMD Radeon HD 7000 Series HDMI Audio
 [10de:228b] | generic-nvidia | NVIDIA GA104 HD Audio Controller
+[8086:3b56] | generic-intel-audio | Intel 5 Series/3400 Series High Definition Audio
+[10de:0be3] | generic-nvidia | NVIDIA High Definition Audio Controller
 
 # --- USB Controllers ---
 [8086:9d2f] | generic-usb-controller | Intel USB 3.0 xHCI
@@ -37,6 +42,8 @@
 [10ec:8723] | generic-realtek-bluetooth | Realtek RTL8723BE Bluetooth
 [8086:a36d] | generic-usb-controller | Intel Cannon Lake PCH USB 3.1
 [1912:0014] | generic-usb-controller | Renesas uPD720201 USB 3.0
+[8086:3b3c] | generic-usb-controller | Intel 5 Series/3400 Series USB2 Enhanced Host
+[8086:3b34] | generic-usb-controller | Intel 5 Series/3400 Series USB2 Enhanced Host
 
 # --- Input/Touchpads ---
 [8086:9d60] | generic-i2c-controller | Intel Serial IO I2C Controller

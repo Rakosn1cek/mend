@@ -1,5 +1,15 @@
 ## 📜 CHANGELOG
 
+## [0.8.2] - 2026-05-14
+Added
+- Expanded hardware.db with legacy support for NVIDIA NVS 3100M and Intel 5 Series chipset components.
+- Added mapping for Intel Centrino Advanced-N 6200 wireless and 82577LM Gigabit networking.
+
+### Fixed
+- Function `mend -h` has been fixed and is fully working. It still depends on `history` to find the correct string/command.
+
+---
+
 ## [0.8.1] - 2026-05-11
 ### Added
 - AUR Integration: Formal support for zsh-mend-git package installation.

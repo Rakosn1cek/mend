@@ -4,7 +4,7 @@
 [![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/GFk45RdS)
 ![License](https://img.shields.io/github/license/Rakosn1cek/mend)
 
-Version: [0.8.1]
+Version: [0.8.2]
 
 ## Hardware Support
 Mend uses a local database (`hardware.db`) to map PCI IDs to distro-specific packages. Currently, it scans and identifies:
@@ -13,6 +13,11 @@ Mend uses a local database (`hardware.db`) to map PCI IDs to distro-specific pac
 * **Audio:** Intel, AMD, and Realtek sound controllers.
 * **Connectivity:** USB 3.0/3.1 controllers and Bluetooth modules.
 * **Input:** I2C and HID Touchpads.
+
+### Fixed in v0.8.2
+- `mend -h` function has been fixed and is fully working. Thank you for the issue reporting.
+
+---
 
 ![RTFM Demo](assets/demo2.png)
 

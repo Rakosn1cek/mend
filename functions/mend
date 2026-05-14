@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # MEND - The Distro-Agnostic Linux Command Assistant
-# Version: 0.8.1
+# Version: 0.8.2
 # Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
 # License: MIT
 # ------------------------------------------------------------------------------
@@ -10,7 +10,10 @@
 function mend() {
     clear
     
-    local MEND_VERSION="0.8.0"
+    # Ensure parameter module is loaded for $history associative array
+    zmodload zsh/parameter 2>/dev/null
+
+    local MEND_VERSION="0.8.2"
     
     # --- Distro Detection & Driver Setup ---
     local MEND_PM="unknown"
@@ -152,7 +155,7 @@ function mend() {
                 source "$MEND_DIR/functions/history"
                 return 0
             else
-                print -P "%F{red}Mend:%f History module not found at ~/arch-projects/mend/functions/history"
+                print -P "%F{red}Mend:%f History module not found at $MEND_DIR/functions/history"
                 return 1
             fi
             ;;
@@ -343,7 +346,7 @@ function mend() {
         echo ""
     fi
 
-    # 4. Command Not Found Check
+    # 6. Command Not Found Check
     if ! command -v "$cmd_base" >/dev/null 2>&1; then
         echo "'$cmd_base' not found. Searching for owner..."
         
@@ -380,7 +383,7 @@ function mend() {
         local owner=$(${(z)PM_QUERY} "$search_target" | head -n 1)
         local pkg=${owner:-$cmd_base}
     else
-        # 5. History Package Search (Triggered if command exists but the exit code was non-zero)
+        # 7. History Package Search (Triggered if command exists but the exit code was non-zero)
         if [[ ! "$cmd_base" =~ ^(echo|ls|cd|pwd|cat|history|mend)$ ]]; then
             # Search history for the last mention of the current package manager (apt/pacman/yay)
             local last_pac_cmd=$(history | grep -iE "${MEND_PM}|${PM_HELPER:-__none__}" | tail -n 1 | sed 's/^[ ]*[0-9]*[ ]*//')
@@ -388,7 +391,7 @@ function mend() {
         fi
     fi
         
-    # 6. FZF Selection Logic
+    # 7. FZF Selection Logic
     if [[ -n "$pkg" ]]; then
         local last_exit_code=$(fc -ln -1 | awk '{print $NF}' > /dev/null; echo $?) 
 
@@ -413,7 +416,7 @@ function mend() {
         fi
     fi
 
-    # 7. THE JANITOR (Agnostic Orphan Cleanup)
+    # 8. THE JANITOR (Agnostic Orphan Cleanup)
     local raw_orphans=()
     
     if [[ "$MEND_PM" == "apt" ]]; then
