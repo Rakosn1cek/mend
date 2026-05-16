@@ -1,7 +1,6 @@
 # Mend
 
 ![GitHub stars](https://img.shields.io/github/stars/Rakosn1cek/mend?style=flat&color=gold)
-[![Discord](https://img.shields.io/badge/Discord-Join%20the%20Hub-7289da?style=flat&logo=discord&logoColor=white)](https://discord.gg/GFk45RdS)
 [![Awesome Zsh Plugins](https://img.shields.io/badge/Awesome-Zsh%20Plugins-brightgreen)](https://github.com/unixorn/awesome-zsh-plugins)
 [![Shell](https://img.shields.io/badge/shell-zsh-brightgreen.svg)](https://github.com/Rakosn1cek/mend)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/Rakosn1cek/mend)](https://github.com/Rakosn1cek/mend/releases)
