@@ -8,20 +8,16 @@
 ![License](https://img.shields.io/github/license/Rakosn1cek/mend)
 
 
+Version: [0.8.3]
 
+### Git Deployment & History Corrections
+Mend handles source code deployments and command corrections natively through interactive pipelines. This version introduces:
 
-Version: [0.8.2]
+- **Git Wizard (mend -git)**: A fully automated initialization and deployment interface. It handles remote tracking setup, staging, custom commit generation, and annotated release tagging directly inside an fzf TUI.
 
-## Hardware Support
-Mend uses a local database (`hardware.db`) to map PCI IDs to distro-specific packages. Currently, it scans and identifies:
-* **Graphics:** NVIDIA, AMD, Intel.
-* **Networking:** Wi-Fi and Ethernet (Intel, Realtek, etc.).
-* **Audio:** Intel, AMD, and Realtek sound controllers.
-* **Connectivity:** USB 3.0/3.1 controllers and Bluetooth modules.
-* **Input:** I2C and HID Touchpads.
-
-### Fixed in v0.8.2
-- `mend -h` function has been fixed and is fully working. Thank you for the issue reporting.
+### Fixed
+- **Refined History Assistant (mend -h)**: Complete structural overhaul of the proximity logic. It enforces a strict two-character prefix constraint that slashes background noise and leverages native length metrics to lock exact typo matches to the absolute top line.
+- Thank you for the issue reporting and patience.
 
 ---
 
@@ -86,8 +82,16 @@ If you see an error like "command not found" or "missing library", simply type `
 
 If you know you made a typo and want to pull a fix directly from your command history, run `mend -h` to open an interactive search that filters out mistakes and suggests the correct command. Once a fix is selected, Mend automatically purges all instances of that typo from your history to keep your command logs clean.
 
+**Git Deployment Wizard**
+To initialize a new Git repository or push updates to GitHub using an interactive interface, run:
+
+`mend -git`
+
+Mend will walk you through setting up your remote repository URL, staging files, creating custom commit messages, and generating annotated release tags using an interactive `fzf` TUI, finishing with a clean push to your remote repository.
+
 **Hardware Scan**
 To scan your system for missing drivers or recommended packages, run:
+
 `mend -s`
 
 Mend will cross-reference your hardware IDs against the local database and present a list of packages available for your specific distribution.

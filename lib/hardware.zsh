@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # MEND - The Distro-Agnostic Linux Command Assistant
-# Version: 0.8.2
+# Version: 0.8.3
 # Descriptions:
 # mend -s hardware scanner
 # Parses system hardware, translates generic IDs to distro-specific packages, 

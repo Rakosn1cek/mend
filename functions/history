@@ -1,7 +1,7 @@
 # ------------------------------------------------------------------------------
 # MEND - The Distro-Agnostic Linux Command Assistant
-# Version: 0.8.2
-# Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
+# Version: 0.8.3
+# Author:  Rakosn1cek (https://github.com/Rakosn1cek)
 # License: MIT
 # ------------------------------------------------------------------------------
 # This code is the original work of Lukas Grumlik - (Rakosn1cek). Attribution is required.
@@ -24,46 +24,54 @@ local -a hist_entries
 hist_entries=(${(u)history})
 
 # 3. Filter out 'mend' commands and the typo itself
-# Use Zsh's built-in array filtering for speed and reliability
 hist_entries=(${hist_entries:#mend*})
 hist_entries=(${hist_entries:#$last_typo})
 
-# 4. Suggest a fix using fzf
-if (( ${#hist_entries} > 0 )); then
+# 4. Narrow the search pool down to the first two characters of the typo
+local -a narrowed_entries
+narrowed_entries=()
+if [[ ${#last_typo} -ge 2 ]]; then
+    local prefix="${last_typo[1,2]}"
+    # Filter the array to only keep entries matching the two-character prefix at the start
+    narrowed_entries=(${(M)hist_entries:#${prefix}*})
+else
+    narrowed_entries=("${hist_entries[@]}")
+fi
+
+# 5. Suggest a fix using fzf
+if (( ${#narrowed_entries} > 0 )); then
     local suggestion
-    suggestion=$(print -l "${hist_entries[@]}" | fzf \
+    
+    # Run fzf completely open without a query seed to avoid character matching exclusions.
+    # The tiebreak config ensures the shortest, most relevant prefix matches hit index 1.
+    suggestion=$(print -l "${narrowed_entries[@]}" | fzf \
         --height 40% --layout=reverse --border \
         --header "Mend: Suggested fix for '$last_typo'" \
-        --query="$last_typo" \
         --tiebreak=length,begin \
         --exit-0)
 
     if [[ -n "$suggestion" ]]; then
         print -P "%F{green}Mend:%f Correcting to: %F{cyan}$suggestion%f"
         
-        # 1. Escape the typo for use in search patterns
+        # Purge the typo from the physical history file
         local escaped_typo="${(b)last_typo}"
-        
-        # 2. Sync and purge the typo from the history file
         if [[ -f "$HISTFILE" ]]; then
-            fc -AI # Append only new increments to history file safely
-            # Remove all instances of the typo from the history file
-            # Handles both standard and EXTENDED_HISTORY formats
             sed -i -e "\|\;${escaped_typo}$|d" -e "\|^${escaped_typo}$|d" "$HISTFILE"
         fi
         
-        # 3. Refresh the current session history buffer
-        # This ensures the typo does not persist in the current session memory
-        if [[ -n "$HISTSIZE" && "$HISTSIZE" -gt 0 ]]; then
-            local old_histsize=$HISTSIZE
-            HISTSIZE=0
-            HISTSIZE=$old_histsize
-            fc -R # Reload history from the purged file
-        fi
-
-        # 4. Push the fix to the buffer
+        # Sync live memory to prevent duplication loops
+        local history_key
+        for history_key in ${(k)history}; do
+            if [[ "$history[$history_key]" == "$last_typo" ]]; then
+                history -d "$history_key"
+            fi
+        done
+        
+        fc -R
+        
+        # Push the correct command straight to the terminal buffer
         print -z "$suggestion"
     fi
 else
-    print -P "%F{red}Mend:%f No suitable command suggestions found in history."
+    print -P "%F{red}Mend:%f No suitable command suggestions found matching prefix."
 fi

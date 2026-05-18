@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # MEND - The Distro-Agnostic Linux Command Assistant
-# Version: 0.8.2
+# Version: 0.8.3
 # Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
 # License: MIT
 # ------------------------------------------------------------------------------
@@ -13,7 +13,7 @@ function mend() {
     # Ensure parameter module is loaded for $history associative array
     zmodload zsh/parameter 2>/dev/null
 
-    local MEND_VERSION="0.8.2"
+    local MEND_VERSION="0.8.3"
     
     # --- Distro Detection & Driver Setup ---
     local MEND_PM="unknown"
@@ -147,6 +147,41 @@ function mend() {
 
     # Flag Handler
     case "$1" in
+        --help)
+            cat << EOF
+Mend $MEND_VERSION
+A distro-agnostic Linux command assistant for terminal error and typo correction.
+
+Usage: mend [options]
+
+Functions:
+  mend              Handle terminal errors immediately after failure (command not found, missing library).
+  mend -h           Launch the interactive history correction Assistant to fix command typos.
+  mend -s           Scan the system topology for missing hardware drivers.
+  mend -git         Launch the interactive repository deployment wizard.
+  mend --help       Show this detailed usage and help documentation.
+
+Options:
+  -h, --history     Target terminal history typos using prefix-based fzf ranking.
+  -s, --scan        Initiate a driver intelligence scan across available hardware buses.
+  -git              Trigger the initialization and tracking wizard for development repositories.
+  --help            Show this help message.
+
+For feedback or bug reports: https://github.com/Rakosn1cek/mend
+EOF
+            return 0
+            ;;
+        -git)
+            # Source the external git logic file using the project directory variable
+            if [[ -f "$MEND_DIR/functions/git" ]]; then
+                source "$MEND_DIR/functions/git"
+                mend_git_setup
+                return 0
+            else
+                print -P "%F{red}Mend:%f Git module not found at $MEND_DIR/functions/git"
+                return 1
+            fi
+            ;;
         --history|-h)
             if [[ -f "$MEND_DIR/functions/history" ]]; then
                 if [[ ! -f "$HISTFILE" ]]; then

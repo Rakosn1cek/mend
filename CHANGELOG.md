@@ -1,7 +1,22 @@
 ## 📜 CHANGELOG
 
+## [0.8.3] - 2026-05-18
+
+### Added
+- New interactive deployment module (`mend -git`) featuring a fully non-destructive `fzf` TUI for repository initialization, remote tracking layout configuration, commit compilation, and annotated release tagging.
+- Automated next-point release version prediction inside the Git deployment tag selection stream.
+- Comprehensive user documentation entries for the Git deployment tool inside the README usage and help systems.
+
+### Fixed
+- Re-architected the history assistant (`mend -h`) to eliminate duplicate suggestion entries by dropping parallel array appending loops.
+- Replaced strict fuzzy query locking with a lightweight two-character prefix constraint, dropping background command noise while resolving hidden match bugs for directory path and package manager typos.
+- Corrected terminal buffer flooding and Zsh 1-index subscript failures within the proximity sorting pipeline.
+- Resolved execution path calculation failures across standard desktop workspaces by dynamically targeting context layout blocks inside the master wrapper.
+
+---
+
 ## [0.8.2] - 2026-05-14
-Added
+### Added
 - Expanded hardware.db with legacy support for NVIDIA NVS 3100M and Intel 5 Series chipset components.
 - Added mapping for Intel Centrino Advanced-N 6200 wireless and 82577LM Gigabit networking.
 

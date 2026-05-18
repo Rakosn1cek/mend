@@ -1,0 +1,95 @@
+# ------------------------------------------------------------------------------
+# MEND - The Distro-Agnostic Linux Command Assistant
+# Version: 0.8.3
+# Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
+# License: MIT
+# ------------------------------------------------------------------------------
+# This code is the original work of Lukas Grumlik - (Rakosn1cek). Attribution is required.
+# ------------------------------------------------------------------------------
+
+# Core git initialisation and deployment wizard
+mend_git_setup() {
+    if ! git rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+        echo "Initialising a new Git repository..."
+        git init
+    fi
+
+    local remote_url
+    # Use fzf to capture the URL string dynamically using the query prompt bar
+    remote_url=$(echo "Type custom URL in filter" | fzf \
+        --height 20% --layout=reverse --border \
+        --header "Mend: Enter the GitHub repository URL" \
+        --print-query | head -n 1)
+
+    if [[ -z "$remote_url" || "$remote_url" == "Type custom URL in filter" ]]; then
+        echo "Repository URL is required. Aborting setup."
+        return 1
+    fi
+
+    git remote remove origin >/dev/null 2>&1
+    git remote add origin "$remote_url"
+
+    echo "Staging all files in the directory..."
+    git add .
+
+    local commit_msg
+    local commit_selection
+    # Use fzf to let the user choose between the default string or supplying a custom string
+    commit_selection=$(echo -e "Initial commit\nType custom message in filter" | fzf \
+        --height 25% --layout=reverse --border \
+        --header "Mend: Choose commit message" \
+        --print-query)
+        
+    # Parse fzf output to split the typed query from the menu selection line
+    local commit_query=$(echo "$commit_selection" | head -n 1)
+    local commit_chosen=$(echo "$commit_selection" | tail -n 1)
+
+    if [[ "$commit_chosen" == "Type custom message in filter" && -n "$commit_query" ]]; then
+        commit_msg="$commit_query"
+    else
+        commit_msg="${commit_chosen:-Initial commit}"
+    fi
+    
+    git commit -m "$commit_msg"
+
+    local tag_decision
+    # Conditional step wrapped cleanly in a native interactive selection toggle
+    tag_decision=$(echo -e "No (Skip tag)\nYes (Create annotated tag)" | fzf \
+        --height 20% --layout=reverse --border \
+        --header "Mend: Do you want to create a tag version?")
+
+    if [[ "$tag_decision" == "Yes (Create annotated tag)" ]]; then
+        local tag_version
+        tag_version=$(echo "Type version (e.g., v1.0.0) in filter" | fzf \
+            --height 20% --layout=reverse --border \
+            --header "Mend: Enter tag version" \
+            --print-query | head -n 1)
+
+        if [[ -n "$tag_version" && "$tag_version" != "Type version (e.g., v1.0.0) in filter" ]]; then
+            local tag_msg
+            local tag_selection
+            tag_selection=$(echo "Type tag description message in filter" | fzf \
+                --height 20% --layout=reverse --border \
+                --header "Mend: Enter tag description message" \
+                --print-query)
+                
+            local tag_query=$(echo "$tag_selection" | head -n 1)
+            local tag_chosen=$(echo "$tag_selection" | tail -n 1)
+
+            if [[ "$tag_chosen" == "Type tag description message in filter" && -n "$tag_query" ]]; then
+                tag_msg="$tag_query"
+            else
+                tag_msg="Release version $tag_version"
+            fi
+            
+            git tag -a "$tag_version" -m "$tag_msg"
+        fi
+    fi
+
+    local branch_name
+    branch_name=$(git branch --show-current 2>/dev/null)
+    branch_name=${branch_name:-main}
+
+    echo "Pushing code to GitHub repository..."
+    git push origin "$branch_name" --tags
+}
