@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # MEND - The Distro-Agnostic Linux Command Assistant
-# Version: 0.8.3
+# Version: 0.8.4
 # Author:  Rakosn1cek (https://github.com/Rakosn1cek/mend)
 # License: MIT
 # ------------------------------------------------------------------------------

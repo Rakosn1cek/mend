@@ -1,5 +1,15 @@
 ## 📜 CHANGELOG
 
+## [0.8.4] - 2026-05-20
+
+### Fixed
+- Optimised shell history matching pool logic within `functions/history` to resolve early mutation typos (e.g., `ccd` instead of `cd`). Implemented a deterministic single-character prefix filter that preserves argument matching inside trailing directories while preventing wide-pool history pollution from unrelated commands.
+
+### Known Issue
+- Mend will not be able to match a typo and suggest fix if it happens at the very first character. This is a sacrifice that has been well thought through during testing to limit unrelated outputs in the fuzzy-search.
+
+---
+
 ## [0.8.3] - 2026-05-18
 
 ### Added

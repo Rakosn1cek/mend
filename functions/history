@@ -1,6 +1,6 @@
 # ------------------------------------------------------------------------------
 # MEND - The Distro-Agnostic Linux Command Assistant
-# Version: 0.8.3
+# Version: 0.8.4
 # Author:  Rakosn1cek (https://github.com/Rakosn1cek)
 # License: MIT
 # ------------------------------------------------------------------------------
@@ -30,10 +30,11 @@ hist_entries=(${hist_entries:#$last_typo})
 # 4. Narrow the search pool down to the first two characters of the typo
 local -a narrowed_entries
 narrowed_entries=()
-if [[ ${#last_typo} -ge 2 ]]; then
-    local prefix="${last_typo[1,2]}"
-    # Filter the array to only keep entries matching the two-character prefix at the start
+if [[ ${#last_typo} -ge 1 ]]; then
+    local prefix="${last_typo[0,1]}"
+    # Filter the array to only keep entries matching the one-character prefix at the start
     narrowed_entries=(${(M)hist_entries:#${prefix}*})
+    
 else
     narrowed_entries=("${hist_entries[@]}")
 fi
@@ -42,8 +43,7 @@ fi
 if (( ${#narrowed_entries} > 0 )); then
     local suggestion
     
-    # Run fzf completely open without a query seed to avoid character matching exclusions.
-    # The tiebreak config ensures the shortest, most relevant prefix matches hit index 1.
+    # Tiebreak config ensures the shortest, most relevant prefix matches hit index 1.
     suggestion=$(print -l "${narrowed_entries[@]}" | fzf \
         --height 40% --layout=reverse --border \
         --header "Mend: Suggested fix for '$last_typo'" \

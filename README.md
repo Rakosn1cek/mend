@@ -8,7 +8,7 @@
 ![License](https://img.shields.io/github/license/Rakosn1cek/mend)
 
 
-Version: [0.8.3]
+Version: [0.8.4]
 
 ### Git Deployment & History Corrections
 Mend handles source code deployments and command corrections natively through interactive pipelines. This version introduces:
@@ -16,7 +16,7 @@ Mend handles source code deployments and command corrections natively through in
 - **Git Wizard (mend -git)**: A fully automated initialization and deployment interface. It handles remote tracking setup, staging, custom commit generation, and annotated release tagging directly inside an fzf TUI.
 
 ### Fixed
-- **Refined History Assistant (mend -h)**: Complete structural overhaul of the proximity logic. It enforces a strict two-character prefix constraint that slashes background noise and leverages native length metrics to lock exact typo matches to the absolute top line.
+- **Refined History Assistant (mend -h)**: Complete structural overhaul of the proximity logic. It enforces a strict one-character prefix constraint that slashes background noise and leverages native length metrics to lock exact typo matches to the absolute top line if possible.
 - Thank you for the issue reporting and patience.
 
 ---
